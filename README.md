@@ -21,3 +21,4 @@ Railway will automatically:
 3. Run `npm start`
 
 Make sure to set all environment variables in the Railway dashboard!
+CAUTION: The RECEIVER_WALLET_ADDRESS is preset to a wallet owned by SIGNLESS, please change it before shipping!
