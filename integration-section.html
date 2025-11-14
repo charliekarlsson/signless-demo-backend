@@ -1,0 +1,630 @@
+    <!-- Integration Section -->
+    <section id="integration" class="integration">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Quick Integration</h2>
+                <p class="section-subtitle">Implementation examples to get you started. Full setup guide available on GitHub.</p>
+            </div>
+            
+            <div class="code-tabs">
+                <div class="tab-buttons">
+                    <button class="tab-btn active" data-tab="javascript">JavaScript</button>
+                    <button class="tab-btn" data-tab="react">React</button>
+                    <button class="tab-btn" data-tab="nodejs">Node.js</button>
+                    <button class="tab-btn" data-tab="python">Python</button>
+                </div>
+
+                <!-- JavaScript Tab -->
+                <div class="tab-content active" data-tab-content="javascript">
+                    <div style="margin-bottom: 1rem;">
+                        <select class="code-type-selector" onchange="toggleCodeType(this, 'javascript')" style="padding: 0.5rem 1rem; border-radius: 8px; background: var(--bg-darker); color: var(--text-primary); border: 1px solid var(--purple-primary); cursor: pointer; font-size: 0.9rem;">
+                            <option value="backend">Backend (Express Server)</option>
+                            <option value="frontend">Frontend (Client)</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Backend Example -->
+                    <div class="code-variant" data-variant="backend" data-lang="javascript" style="display: block;">
+                        <div class="code-block">
+                            <div class="code-header">
+                                <span>Express.js Authentication Server</span>
+                                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                            </div>
+                            <pre><code>const express = require('express');
+const { Connection, PublicKey, LAMPORTS_PER_SOL } = require('@solana/web3.js');
+
+const app = express();
+app.use(express.json());
+
+const connection = new Connection('https://api.mainnet-beta.solana.com');
+const sessions = new Map();
+const RECEIVER_ADDRESS = 'YOUR_WALLET_ADDRESS_HERE';
+
+// Initiate authentication
+app.post('/api/auth/initiate', (req, res) => {
+  const { walletAddress } = req.body;
+  const sessionId = crypto.randomUUID();
+  
+  // Generate dynamic amount: 0.00001 + timestamp modifier
+  const baseAmount = 0.00001;
+  const modifier = (Date.now() % 1000) / 1000000000;
+  const expectedAmount = baseAmount + modifier;
+  
+  sessions.set(sessionId, {
+    walletAddress,
+    expectedAmount,
+    status: 'pending',
+    createdAt: Date.now()
+  });
+  
+  res.json({
+    sessionId,
+    receiverAddress: RECEIVER_ADDRESS,
+    expectedAmount: expectedAmount.toFixed(9)
+  });
+});
+
+// Check authentication status
+app.get('/api/auth/status/:sessionId', async (req, res) => {
+  const session = sessions.get(req.params.sessionId);
+  if (!session) return res.status(404).json({ error: 'Session not found' });
+  
+  if (session.status === 'verified') {
+    return res.json({ status: 'verified', walletAddress: session.walletAddress });
+  }
+  
+  // Check blockchain for transaction
+  const receiverPubkey = new PublicKey(RECEIVER_ADDRESS);
+  
+  const signatures = await connection.getSignaturesForAddress(receiverPubkey, { limit: 50 });
+  
+  for (const sig of signatures) {
+    const tx = await connection.getParsedTransaction(sig.signature);
+    const transferInstruction = tx.transaction.message.instructions.find(
+      ix => ix.program === 'system' && ix.parsed?.type === 'transfer'
+    );
+    
+    if (transferInstruction && transferInstruction.parsed.info.source === session.walletAddress) {
+      const receivedAmount = transferInstruction.parsed.info.lamports / LAMPORTS_PER_SOL;
+      
+      // Verify amount within tolerance (±0.000001 SOL)
+      if (Math.abs(receivedAmount - session.expectedAmount) < 0.000001) {
+        session.status = 'verified';
+        return res.json({ status: 'verified', walletAddress: session.walletAddress });
+      }
+    }
+  }
+  
+  res.json({ status: 'pending' });
+});
+
+app.listen(3000, () => console.log('Auth server running on port 3000'));</code></pre>
+                        </div>
+                    </div>
+                    
+                    <!-- Frontend Example -->
+                    <div class="code-variant" data-variant="frontend" data-lang="javascript" style="display: none;">
+                        <div class="code-block">
+                            <div class="code-header">
+                                <span>Vanilla JavaScript Client</span>
+                                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                            </div>
+                            <pre><code>// Step 1: Get wallet address from user
+const walletAddress = prompt('Enter your Solana wallet address:');
+
+// Step 2: Initiate authentication
+const response = await fetch('https://your-api.com/api/auth/initiate', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ walletAddress })
+});
+
+const data = await response.json();
+
+// Step 3: Display instructions to user
+alert(`Please send ${data.expectedAmount} SOL to: ${data.receiverAddress}`);
+// Show these details in your UI with copy buttons
+
+// Step 4: Poll for verification
+const checkAuth = async () => {
+  const statusRes = await fetch(
+    `https://your-api.com/api/auth/status/${data.sessionId}`
+  );
+  const status = await statusRes.json();
+  
+  if (status.status === 'verified') {
+    console.log('✅ Authenticated!', status);
+    localStorage.setItem('sessionId', data.sessionId);
+    // User is authenticated - proceed to app
+  } else if (status.status === 'pending') {
+    // Still waiting - check again in 5 seconds
+    setTimeout(checkAuth, 5000);
+  }
+};
+
+checkAuth(); // Start polling</code></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- React Tab -->
+                <div class="tab-content" data-tab-content="react">
+                    <div style="margin-bottom: 1rem;">
+                        <select class="code-type-selector" onchange="toggleCodeType(this, 'react')" style="padding: 0.5rem 1rem; border-radius: 8px; background: var(--bg-darker); color: var(--text-primary); border: 1px solid var(--purple-primary); cursor: pointer; font-size: 0.9rem;">
+                            <option value="backend">Backend (Express Server)</option>
+                            <option value="frontend">Frontend (React Hook)</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Backend Example (Same as JavaScript) -->
+                    <div class="code-variant" data-variant="backend" data-lang="react" style="display: block;">
+                        <div class="code-block">
+                            <div class="code-header">
+                                <span>Express.js Authentication Server</span>
+                                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                            </div>
+                            <pre><code>const express = require('express');
+const { Connection, PublicKey, LAMPORTS_PER_SOL } = require('@solana/web3.js');
+
+const app = express();
+app.use(express.json());
+
+const connection = new Connection('https://api.mainnet-beta.solana.com');
+const sessions = new Map();
+const RECEIVER_ADDRESS = 'YOUR_WALLET_ADDRESS_HERE';
+
+// Initiate authentication
+app.post('/api/auth/initiate', (req, res) => {
+  const { walletAddress } = req.body;
+  const sessionId = crypto.randomUUID();
+  
+  // Generate dynamic amount: 0.00001 + timestamp modifier
+  const baseAmount = 0.00001;
+  const modifier = (Date.now() % 1000) / 1000000000;
+  const expectedAmount = baseAmount + modifier;
+  
+  sessions.set(sessionId, {
+    walletAddress,
+    expectedAmount,
+    status: 'pending',
+    createdAt: Date.now()
+  });
+  
+  res.json({
+    sessionId,
+    receiverAddress: RECEIVER_ADDRESS,
+    expectedAmount: expectedAmount.toFixed(9)
+  });
+});
+
+// Check authentication status
+app.get('/api/auth/status/:sessionId', async (req, res) => {
+  const session = sessions.get(req.params.sessionId);
+  if (!session) return res.status(404).json({ error: 'Session not found' });
+  
+  if (session.status === 'verified') {
+    return res.json({ status: 'verified', walletAddress: session.walletAddress });
+  }
+  
+  // Check blockchain for transaction
+  const receiverPubkey = new PublicKey(RECEIVER_ADDRESS);
+  
+  const signatures = await connection.getSignaturesForAddress(receiverPubkey, { limit: 50 });
+  
+  for (const sig of signatures) {
+    const tx = await connection.getParsedTransaction(sig.signature);
+    const transferInstruction = tx.transaction.message.instructions.find(
+      ix => ix.program === 'system' && ix.parsed?.type === 'transfer'
+    );
+    
+    if (transferInstruction && transferInstruction.parsed.info.source === session.walletAddress) {
+      const receivedAmount = transferInstruction.parsed.info.lamports / LAMPORTS_PER_SOL;
+      
+      // Verify amount within tolerance (±0.000001 SOL)
+      if (Math.abs(receivedAmount - session.expectedAmount) < 0.000001) {
+        session.status = 'verified';
+        return res.json({ status: 'verified', walletAddress: session.walletAddress });
+      }
+    }
+  }
+  
+  res.json({ status: 'pending' });
+});
+
+app.listen(3000, () => console.log('Auth server running on port 3000'));</code></pre>
+                        </div>
+                    </div>
+                    
+                    <!-- Frontend Example (React Hook) -->
+                    <div class="code-variant" data-variant="frontend" data-lang="react" style="display: none;">
+                        <div class="code-block">
+                            <div class="code-header">
+                                <span>React Authentication Hook</span>
+                                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                            </div>
+                            <pre><code>import { useState, useEffect } from 'react';
+
+function useSignlessAuth() {
+  const [walletAddress, setWalletAddress] = useState('');
+  const [authDetails, setAuthDetails] = useState(null);
+  const [authenticated, setAuthenticated] = useState(false);
+  const [polling, setPolling] = useState(false);
+
+  // Poll for authentication status
+  useEffect(() => {
+    if (!polling || !authDetails) return;
+
+    const interval = setInterval(async () => {
+      const res = await fetch(
+        `https://your-api.com/api/auth/status/${authDetails.sessionId}`
+      );
+      const status = await res.json();
+
+      if (status.status === 'verified') {
+        setAuthenticated(true);
+        setPolling(false);
+        localStorage.setItem('sessionId', authDetails.sessionId);
+      }
+    }, 5000); // Poll every 5 seconds
+
+    return () => clearInterval(interval);
+  }, [polling, authDetails]);
+
+  const startAuth = async () => {
+    const res = await fetch('https://your-api.com/api/auth/initiate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ walletAddress })
+    });
+    const data = await res.json();
+
+    setAuthDetails({ 
+      sessionId: data.sessionId, 
+      receiverAddress: data.receiverAddress, 
+      expectedAmount: data.expectedAmount 
+    });
+    setPolling(true);
+  };
+
+  return {
+    walletAddress,
+    setWalletAddress,
+    authDetails,
+    authenticated,
+    startAuth
+  };
+}
+
+// Usage in component
+function MyApp() {
+  const { walletAddress, setWalletAddress, authDetails, authenticated, startAuth } = useSignlessAuth();
+
+  return (
+    <div>
+      {!authDetails ? (
+        <>
+          <input
+            value={walletAddress}
+            onChange={(e) => setWalletAddress(e.target.value)}
+            placeholder="Enter wallet address"
+          />
+          <button onClick={startAuth}>Start Auth</button>
+        </>
+      ) : !authenticated ? (
+        <div>
+          <p>Open your wallet app and send:</p>
+          <p>Amount: {authDetails.expectedAmount} SOL</p>
+          <p>To: <code>{authDetails.receiverAddress}</code></p>
+          <p>Waiting for transaction...</p>
+        </div>
+      ) : (
+        <p>✅ Authenticated!</p>
+      )}
+    </div>
+  );
+}</code></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Node.js Tab -->
+                <div class="tab-content" data-tab-content="nodejs">
+                    <div style="margin-bottom: 1rem;">
+                        <select class="code-type-selector" onchange="toggleCodeType(this, 'nodejs')" style="padding: 0.5rem 1rem; border-radius: 8px; background: var(--bg-darker); color: var(--text-primary); border: 1px solid var(--purple-primary); cursor: pointer; font-size: 0.9rem;">
+                            <option value="backend">Backend (Full Server)</option>
+                            <option value="frontend">Frontend (Middleware)</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Backend Example -->
+                    <div class="code-variant" data-variant="backend" data-lang="nodejs" style="display: block;">
+                        <div class="code-block">
+                            <div class="code-header">
+                                <span>Complete Node.js Server</span>
+                                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                            </div>
+                            <pre><code>const express = require('express');
+const { Connection, PublicKey, LAMPORTS_PER_SOL } = require('@solana/web3.js');
+
+const app = express();
+app.use(express.json());
+
+const connection = new Connection('https://api.mainnet-beta.solana.com');
+const sessions = new Map();
+const RECEIVER_ADDRESS = 'YOUR_WALLET_ADDRESS_HERE';
+
+// Initiate authentication
+app.post('/api/auth/initiate', (req, res) => {
+  const { walletAddress } = req.body;
+  const sessionId = crypto.randomUUID();
+  
+  // Generate dynamic amount
+  const baseAmount = 0.00001;
+  const modifier = (Date.now() % 1000) / 1000000000;
+  const expectedAmount = baseAmount + modifier;
+  
+  sessions.set(sessionId, {
+    walletAddress,
+    expectedAmount,
+    status: 'pending',
+    createdAt: Date.now()
+  });
+  
+  res.json({
+    sessionId,
+    receiverAddress: RECEIVER_ADDRESS,
+    expectedAmount: expectedAmount.toFixed(9)
+  });
+});
+
+// Check authentication status
+app.get('/api/auth/status/:sessionId', async (req, res) => {
+  const session = sessions.get(req.params.sessionId);
+  if (!session) return res.status(404).json({ error: 'Session not found' });
+  
+  if (session.status === 'verified') {
+    return res.json({ status: 'verified', walletAddress: session.walletAddress });
+  }
+  
+  // Check blockchain
+  const receiverPubkey = new PublicKey(RECEIVER_ADDRESS);
+  const signatures = await connection.getSignaturesForAddress(receiverPubkey, { limit: 50 });
+  
+  for (const sig of signatures) {
+    const tx = await connection.getParsedTransaction(sig.signature);
+    const transferInstruction = tx.transaction.message.instructions.find(
+      ix => ix.program === 'system' && ix.parsed?.type === 'transfer'
+    );
+    
+    if (transferInstruction && transferInstruction.parsed.info.source === session.walletAddress) {
+      const receivedAmount = transferInstruction.parsed.info.lamports / LAMPORTS_PER_SOL;
+      
+      if (Math.abs(receivedAmount - session.expectedAmount) < 0.000001) {
+        session.status = 'verified';
+        return res.json({ status: 'verified', walletAddress: session.walletAddress });
+      }
+    }
+  }
+  
+  res.json({ status: 'pending' });
+});
+
+app.listen(3000);</code></pre>
+                        </div>
+                    </div>
+                    
+                    <!-- Frontend Example (Middleware) -->
+                    <div class="code-variant" data-variant="frontend" data-lang="nodejs" style="display: none;">
+                        <div class="code-block">
+                            <div class="code-header">
+                                <span>Express Middleware for Protected Routes</span>
+                                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                            </div>
+                            <pre><code>const express = require('express');
+const axios = require('axios');
+
+const API_URL = 'https://your-api.com';
+
+// Middleware to protect routes
+async function requireAuth(req, res, next) {
+  const sessionId = req.headers['x-session-id'];
+  
+  if (!sessionId) {
+    return res.status(401).json({ error: 'No session ID provided' });
+  }
+  
+  try {
+    const response = await axios.get(
+      `${API_URL}/api/auth/status/${sessionId}`
+    );
+    
+    if (response.data.status === 'verified') {
+      req.user = { 
+        walletAddress: response.data.walletAddress,
+        sessionId: sessionId 
+      };
+      next();
+    } else {
+      res.status(401).json({ error: 'Not authenticated' });
+    }
+  } catch (error) {
+    res.status(401).json({ error: 'Authentication check failed' });
+  }
+}
+
+// Use on protected routes
+const app = express();
+
+app.get('/api/protected', requireAuth, (req, res) => {
+  res.json({ 
+    message: 'Welcome!',
+    wallet: req.user.walletAddress 
+  });
+});
+
+app.listen(3000);</code></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Python Tab -->
+                <div class="tab-content" data-tab-content="python">
+                    <div style="margin-bottom: 1rem;">
+                        <select class="code-type-selector" onchange="toggleCodeType(this, 'python')" style="padding: 0.5rem 1rem; border-radius: 8px; background: var(--bg-darker); color: var(--text-primary); border: 1px solid var(--purple-primary); cursor: pointer; font-size: 0.9rem;">
+                            <option value="backend">Backend (Flask Server)</option>
+                            <option value="frontend">Frontend (Decorator)</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Backend Example -->
+                    <div class="code-variant" data-variant="backend" data-lang="python" style="display: block;">
+                        <div class="code-block">
+                            <div class="code-header">
+                                <span>Flask Authentication Server</span>
+                                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                            </div>
+                            <pre><code>from flask import Flask, request, jsonify
+from solana.rpc.api import Client
+from solana.publickey import PublicKey
+import uuid
+import time
+
+app = Flask(__name__)
+client = Client("https://api.mainnet-beta.solana.com")
+sessions = {}
+RECEIVER_ADDRESS = "YOUR_WALLET_ADDRESS_HERE"
+
+@app.route('/api/auth/initiate', methods=['POST'])
+def initiate_auth():
+    data = request.json
+    wallet_address = data['walletAddress']
+    session_id = str(uuid.uuid4())
+    
+    # Generate dynamic amount
+    base_amount = 0.00001
+    modifier = (int(time.time() * 1000) % 1000) / 1000000000
+    expected_amount = base_amount + modifier
+    
+    sessions[session_id] = {
+        'walletAddress': wallet_address,
+        'expectedAmount': expected_amount,
+        'status': 'pending',
+        'createdAt': time.time()
+    }
+    
+    return jsonify({
+        'sessionId': session_id,
+        'receiverAddress': RECEIVER_ADDRESS,
+        'expectedAmount': f"{expected_amount:.9f}"
+    })
+
+@app.route('/api/auth/status/<session_id>', methods=['GET'])
+def check_status(session_id):
+    session = sessions.get(session_id)
+    if not session:
+        return jsonify({'error': 'Session not found'}), 404
+    
+    if session['status'] == 'verified':
+        return jsonify({
+            'status': 'verified',
+            'walletAddress': session['walletAddress']
+        })
+    
+    # Check blockchain for transaction
+    receiver_pubkey = PublicKey(RECEIVER_ADDRESS)
+    signatures = client.get_signatures_for_address(receiver_pubkey, limit=50)
+    
+    for sig in signatures['result']:
+        tx = client.get_transaction(sig['signature'])
+        # Parse transaction and verify amount
+        # (Simplified - full implementation in GitHub repo)
+        
+        # If verified:
+        session['status'] = 'verified'
+        return jsonify({
+            'status': 'verified',
+            'walletAddress': session['walletAddress']
+        })
+    
+    return jsonify({'status': 'pending'})
+
+if __name__ == '__main__':
+    app.run(port=3000)</code></pre>
+                        </div>
+                    </div>
+                    
+                    <!-- Frontend Example (Decorator) -->
+                    <div class="code-variant" data-variant="frontend" data-lang="python" style="display: none;">
+                        <div class="code-block">
+                            <div class="code-header">
+                                <span>Flask Decorator for Protected Routes</span>
+                                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                            </div>
+                            <pre><code>import requests
+from functools import wraps
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+API_URL = 'https://your-api.com'
+
+def require_auth(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        session_id = request.headers.get('X-Session-Id')
+        
+        if not session_id:
+            return jsonify({'error': 'No session ID provided'}), 401
+        
+        try:
+            response = requests.get(
+                f'{API_URL}/api/auth/status/{session_id}',
+                timeout=5
+            )
+            data = response.json()
+            
+            if data.get('status') == 'verified':
+                request.user = {
+                    'walletAddress': data['walletAddress'],
+                    'sessionId': session_id
+                }
+                return f(*args, **kwargs)
+            else:
+                return jsonify({'error': 'Not authenticated'}), 401
+                
+        except requests.RequestException as e:
+            return jsonify({'error': 'Authentication check failed'}), 401
+    
+    return decorated
+
+@app.route('/api/protected')
+@require_auth
+def protected_route():
+    return jsonify({
+        'message': 'Welcome!',
+        'wallet': request.user['walletAddress']
+    })
+
+if __name__ == '__main__':
+    app.run()</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+    // Toggle between frontend and backend code examples
+    function toggleCodeType(selectElement, lang) {
+        const value = selectElement.value;
+        const variants = document.querySelectorAll(`[data-lang="${lang}"]`);
+        
+        variants.forEach(variant => {
+            if (variant.dataset.variant === value) {
+                variant.style.display = 'block';
+            } else {
+                variant.style.display = 'none';
+            }
+        });
+    }
+    </script>

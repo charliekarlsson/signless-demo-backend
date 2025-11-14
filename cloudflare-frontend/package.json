@@ -1,0 +1,24 @@
+{
+  "name": "cloudflare-frontend",
+  "version": "1.0.0",
+  "description": "Beautiful, modern landing page for the SignLess project - showcasing passwordless Solana wallet authentication.",
+  "main": "script.js",
+  "scripts": {
+    "deploy": "wrangler pages deploy . --project-name=signless-demo-frontend",
+    "dev": "wrangler pages dev ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/charliekarlsson/signless-demo-frontend.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/charliekarlsson/signless-demo-frontend/issues"
+  },
+  "homepage": "https://github.com/charliekarlsson/signless-demo-frontend#readme",
+  "devDependencies": {
+    "wrangler": "^4.42.0"
+  }
+}

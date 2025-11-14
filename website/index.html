@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SignLess - X402 Solana Anti-Drain Authentication</title>
+    <meta name="description" content="X402-powered Solana authentication that replaces signing with microtransaction invoices to stop wallet-drain scams.">
+    <link rel="icon" type="image/png" href="../logos/logo.png">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-content">
+                <div class="logo">
+                    <img src="../logos/logotext.png" alt="SignLess" class="logo-image" style="height: 72px; width: auto;">
+                </div>
+                <div class="nav-links">
+                    <a href="#features">Features</a>
+                    <a href="#how-it-works">How It Works</a>
+                    <a href="#docs">Documentation</a>
+                    <a href="#pricing">Pricing</a>
+                    <a href="https://github.com/yourusername/solana-auth" target="_blank" class="nav-github">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                        </svg>
+                        GitHub
+                    </a>
+                    <a href="demo-game.html" class="btn-primary">Try Demo</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-gradient"></div>
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <span class="badge-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <rect class="fill-accent" x="5.5" y="10" width="13" height="9" rx="3" />
+                            <path d="M8 10V8a4 4 0 0 1 8 0v2" />
+                            <circle cx="12" cy="14.5" r="1.6" fill="none" />
+                            <line x1="12" y1="16.1" x2="12" y2="18" />
+                        </svg>
+                    </span>
+                    <span>HTTP 402 • X402 Native</span>
+                </div>
+                <div style="margin-bottom: 2rem;">
+                    <img src="../logos/logo.png" alt="SignLess Logo" style="max-width: 200px; width: 100%; height: auto;">
+                </div>
+                <h1 class="hero-title">
+                    X402 Authentication<br/>
+                    <span class="gradient-text">Purpose-Built for Solana</span>
+                </h1>
+                <p class="hero-subtitle">
+                    Ship a true HTTP 402 flow where users receive a one-time invoice, pay a Solana microtransaction, and unlock access without ever approving a blind signature.
+                    Stop wallet-drain exploits while keeping integration effortless.
+                </p>
+                <div class="hero-cta">
+                    <a href="#docs" class="btn-large btn-primary">
+                        Get Started
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M5 12h14M12 5l7 7-7 7"/>
+                        </svg>
+                    </a>
+                    <a href="https://github.com/yourusername/solana-auth" class="btn-large btn-secondary">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                        </svg>
+                        View on GitHub
+                    </a>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat">
+                        <div class="stat-value">402</div>
+                        <div class="stat-label">HTTP Invoice</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">0</div>
+                        <div class="stat-label">Signature Prompts</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">100%</div>
+                        <div class="stat-label">Solana Native</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section id="how-it-works" class="how-it-works">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">How X402 Auth Works</h2>
+                <p class="section-subtitle">Invoice → Microtransaction → Access</p>
+            </div>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">01</div>
+                    <div class="step-content">
+                        <h3>Return HTTP 402 Invoice</h3>
+                        <p>The backend mints a session-specific invoice (amount, receiver, expiry) and responds with HTTP 402 so wallets never see a blind signature prompt.</p>
+                    </div>
+                    <div class="step-visual">
+                        <div class="code-preview">
+                            <pre><code class="no-highlight">// Backend prepares X402 invoice
+const session = {
+  id: uuid(),
+  walletAddress: request.walletAddress,
+  receiverAddress: process.env.RECEIVER,
+  expectedAmount: 0.00001,
+  status: 'pending',
+  expiresAt: Date.now() + 900000
+};
+
+sessions.set(sessionId, session);
+return session;</code></pre>
+                        </div>
+                    </div>
+                </div>
+                <div class="step step-reverse">
+                    <div class="step-number">02</div>
+                    <div class="step-content">
+                        <h3>Pay the Micro-Invoice</h3>
+                        <p>The user pays the exact lamport amount from their wallet. Because it’s an explicit transfer, malicious signature drainers are completely bypassed.</p>
+                    </div>
+                    <div class="step-visual">
+                        <div class="transaction-visual">
+                            <div class="tx-box">User Wallet</div>
+                            <div class="tx-arrow">→ 0.00001 SOL →</div>
+                            <div class="tx-box">Verification Address</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">03</div>
+                    <div class="step-content">
+                        <h3>Automated On-Chain Receipt</h3>
+                        <p>SignLess polls Solana or subscribes to webhooks, matches sender + amount, and upgrades the session to verified with zero signature surface area.</p>
+                    </div>
+                    <div class="step-visual">
+                        <div class="code-preview">
+                            <pre><code class="no-highlight">// Backend polls blockchain for matching tx
+const signatures = await connection
+  .getSignaturesForAddress(receiverPubkey);
+
+for (const sig of signatures) {
+  const tx = await connection.getTransaction(sig);
+  
+  // Check sender + amount match
+  if (tx.sender === session.walletAddress &&
+      tx.amount === session.expectedAmount) {
+    
+    session.status = 'verified';
+    return { authenticated: true };
+  }
+}</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Why Teams Ship X402 with SignLess</h2>
+                <p class="section-subtitle">Purpose-built to stop Solana signing drains with a standards-based, open-source HTTP 402 flow.</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon"><img src="media/icons/1.png" alt="X402 Invoice Flow"></div>
+                    <h3>X402 Invoice Flow</h3>
+                    <p>Respond with HTTP 402 and session-specific invoices so every login is explicit, auditable, and compatible with emerging paywall standards.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><img src="media/icons/2.png" alt="Anti-Drain by Design"></div>
+                    <h3>Anti-Drain by Design</h3>
+                    <p>No arbitrary signatures, no blind approvals. Users only send a microtransaction they control, eliminating common wallet-drain vectors.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><img src="media/icons/3.png" alt="Solana-First Speed"></div>
+                    <h3>Solana-First Speed</h3>
+                    <p>Keep sub-second verification thanks to Solana’s throughput and lightweight lamport matching logic.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><img src="media/icons/4.png" alt="Drop-In REST APIs"></div>
+                    <h3>Drop-In REST APIs</h3>
+                    <p>Initiate invoices, poll status, or plug into webhooks. Works with any stack and existing auth middleware.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><img src="media/icons/5.png" alt="You Own the Receiver"></div>
+                    <h3>You Own the Receiver</h3>
+                    <p>Point invoices to your wallet or treasury to keep funds in your control, whether you self-host or use a managed deployment.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><img src="media/icons/6.png" alt="Open Source & Auditable"></div>
+                    <h3>Open Source & Auditable</h3>
+                    <p>MIT licensed with clear Solana services so security reviewers can trace every step of the verification path.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Code Examples -->
+    <section id="docs" class="code-examples">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Quick X402 Integration</h2>
+                <p class="section-subtitle">Parse the HTTP 402 invoice, display the Solana microtransaction, and unlock access—here’s how in your stack.</p>
+            </div>
+            
+            <div class="code-tabs">
+                <div class="tab-buttons">
+                    <button class="tab-btn active" data-tab="javascript">JavaScript</button>
+                    <button class="tab-btn" data-tab="react">React</button>
+                    <button class="tab-btn" data-tab="nodejs">Node.js</button>
+                    <button class="tab-btn" data-tab="python">Python</button>
+                </div>
+
+                <div class="tab-content active" data-tab-content="javascript">
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span>Vanilla JavaScript</span>
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        </div>
+                        <pre><code>// Step 1: Get wallet address from user
+const walletAddress = prompt('Enter your Solana wallet address:');
+
+// Step 2: Initiate authentication (API responds with an HTTP 402 invoice payload)
+const response = await fetch('https://your-api.com/api/auth/initiate', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ walletAddress })
+});
+
+const data = await response.json();
+
+// Step 3: Display instructions to user
+alert(`Please send ${data.expectedAmount} SOL to: ${data.receiverAddress}`);
+// Show these details in your UI with copy buttons
+
+// Step 4: Poll for verification
+const checkAuth = async () => {
+  const statusRes = await fetch(
+    `https://your-api.com/api/auth/status/${data.sessionId}`
+  );
+  const status = await statusRes.json();
+  
+  if (status.status === 'verified') {
+    console.log('✅ Authenticated!', status);
+    localStorage.setItem('sessionId', data.sessionId);
+    // User is authenticated - proceed to app
+  } else if (status.status === 'pending') {
+    // Still waiting - check again in 5 seconds
+    setTimeout(checkAuth, 5000);
+  }
+};
+
+checkAuth(); // Start polling</code></pre>
+                    </div>
+                </div>
+
+                <div class="tab-content" data-tab-content="react">
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span>React Hook</span>
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        </div>
+                        <pre><code>import { useState, useEffect } from 'react';
+
+function MyApp() {
+  const [walletAddress, setWalletAddress] = useState('');
+  const [authDetails, setAuthDetails] = useState(null);
+  const [authenticated, setAuthenticated] = useState(false);
+  const [polling, setPolling] = useState(false);
+
+  // Poll for authentication status
+  useEffect(() => {
+    if (!polling || !authDetails) return;
+
+    const interval = setInterval(async () => {
+      const res = await fetch(
+        `https://your-api.com/api/auth/status/${authDetails.sessionId}`
+      );
+      const status = await res.json();
+
+      if (status.status === 'verified') {
+        setAuthenticated(true);
+        setPolling(false);
+        localStorage.setItem('sessionId', authDetails.sessionId);
+      }
+    }, 5000); // Poll every 5 seconds
+
+    return () => clearInterval(interval);
+  }, [polling, authDetails]);
+
+  const startAuth = async () => {
+    // 1. Initiate authentication (returns invoice payload)
+    const res = await fetch('https://your-api.com/api/auth/initiate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ walletAddress })
+    });
+    const data = await res.json();
+
+    // 2. Show user what to send (they send manually from wallet app)
+    setAuthDetails({ 
+      sessionId: data.sessionId, 
+      receiverAddress: data.receiverAddress, 
+      expectedAmount: data.expectedAmount 
+    });
+    setPolling(true);
+  };
+
+  return (
+    &lt;div&gt;
+      {!authDetails ? (
+        &lt;&gt;
+          &lt;input
+            value={walletAddress}
+            onChange={(e) =&gt; setWalletAddress(e.target.value)}
+            placeholder="Enter wallet address"
+          /&gt;
+          &lt;button onClick={startAuth}&gt;Start Auth&lt;/button&gt;
+        &lt;/&gt;
+      ) : !authenticated ? (
+        &lt;div&gt;
+          &lt;p&gt;Open your wallet app and send:&lt;/p&gt;
+          &lt;p&gt;Amount: {authDetails.expectedAmount} SOL&lt;/p&gt;
+          &lt;p&gt;To: &lt;code&gt;{authDetails.receiverAddress}&lt;/code&gt;&lt;/p&gt;
+          &lt;p&gt;Waiting for transaction...&lt;/p&gt;
+        &lt;/div&gt;
+      ) : (
+        &lt;p&gt;✅ Authenticated!&lt;/p&gt;
+      )}
+    &lt;/div&gt;
+  );
+}</code></pre>
+                    </div>
+                </div>
+
+                <div class="tab-content" data-tab-content="nodejs">
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span>Node.js Middleware</span>
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        </div>
+                        <pre><code>const express = require('express');
+const axios = require('axios');
+
+const API_URL = 'https://your-api.com';
+
+// Middleware to protect routes
+async function requireAuth(req, res, next) {
+  const sessionId = req.headers['x-session-id'];
+  
+  if (!sessionId) {
+    return res.status(401).json({ error: 'No session ID provided' });
+  }
+  
+  try {
+    const response = await axios.get(
+      `${API_URL}/api/auth/status/${sessionId}`
+    );
+    
+    if (response.data.status === 'verified') {
+      req.user = { 
+        walletAddress: response.data.walletAddress,
+        sessionId: sessionId 
+      };
+      next();
+    } else {
+      res.status(401).json({ error: 'Not authenticated' });
+    }
+  } catch (error) {
+    res.status(401).json({ error: 'Authentication check failed' });
+  }
+}
+
+// Use on protected routes
+const app = express();
+
+app.get('/api/protected', requireAuth, (req, res) => {
+  res.json({ 
+    message: 'Welcome!',
+    wallet: req.user.walletAddress 
+  });
+});
+
+app.listen(3000);</code></pre>
+                    </div>
+                </div>
+
+                <div class="tab-content" data-tab-content="python">
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span>Python/Flask Decorator</span>
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        </div>
+                        <pre><code>import requests
+from functools import wraps
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+API_URL = 'https://your-api.com'
+
+def require_auth(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        session_id = request.headers.get('X-Session-Id')
+        
+        if not session_id:
+            return jsonify({'error': 'No session ID provided'}), 401
+        
+        try:
+            response = requests.get(
+                f'{API_URL}/api/auth/status/{session_id}',
+                timeout=5
+            )
+            data = response.json()
+            
+            if data.get('status') == 'verified':
+                request.user = {
+                    'walletAddress': data['walletAddress'],
+                    'sessionId': session_id
+                }
+                return f(*args, **kwargs)
+            else:
+                return jsonify({'error': 'Not authenticated'}), 401
+                
+        except requests.RequestException as e:
+            return jsonify({'error': 'Authentication check failed'}), 401
+    
+    return decorated
+
+@app.route('/api/protected')
+@require_auth
+def protected_route():
+    return jsonify({
+        'message': 'Welcome!',
+        'wallet': request.user['walletAddress']
+    })
+
+if __name__ == '__main__':
+    app.run()</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Open Source -->
+    <section id="pricing" class="pricing">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">MIT-Licensed X402 Stack</h2>
+                <p class="section-subtitle">Free forever, reviewed in the open, and focused on stopping Solana draining attacks.</p>
+            </div>
+            <div style="max-width: 800px; margin: 0 auto;">
+                <div class="pricing-card" style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%); border: 2px solid var(--purple-primary);">
+                    <div class="pricing-badge">Free Forever</div>
+                    <h3>Community Edition</h3>
+                    <div class="price">
+                        <span class="price-amount">$0</span>
+                        <span class="price-period">forever</span>
+                    </div>
+                    <p class="pricing-desc">Complete authentication system. Deploy anywhere. Modify as needed. No strings attached.</p>
+                    <ul class="pricing-features" style="text-align: left; max-width: 400px; margin: 0 auto 2rem;">
+                        <li>
+                            <span class="check-icon" aria-hidden="true">
+                                <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M4 10l4 4 8-8" />
+                                </svg>
+                            </span>
+                            <span>Unlimited authentications</span>
+                        </li>
+                        <li>
+                            <span class="check-icon" aria-hidden="true">
+                                <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M4 10l4 4 8-8" />
+                                </svg>
+                            </span>
+                            <span>Full source code access</span>
+                        </li>
+                        <li>
+                            <span class="check-icon" aria-hidden="true">
+                                <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M4 10l4 4 8-8" />
+                                </svg>
+                            </span>
+                            <span>HTTP 402 invoice endpoints included</span>
+                        </li>
+                        <li>
+                            <span class="check-icon" aria-hidden="true">
+                                <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M4 10l4 4 8-8" />
+                                </svg>
+                            </span>
+                            <span>Self-hosted – you control everything</span>
+                        </li>
+                        <li>
+                            <span class="check-icon" aria-hidden="true">
+                                <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M4 10l4 4 8-8" />
+                                </svg>
+                            </span>
+                            <span>Deploy to Railway, Vercel, AWS, anywhere</span>
+                        </li>
+                        <li>
+                            <span class="check-icon" aria-hidden="true">
+                                <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M4 10l4 4 8-8" />
+                                </svg>
+                            </span>
+                            <span>Customize for your needs</span>
+                        </li>
+                        <li>
+                            <span class="check-icon" aria-hidden="true">
+                                <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M4 10l4 4 8-8" />
+                                </svg>
+                            </span>
+                            <span>Your own wallet receives verification fees</span>
+                        </li>
+                        <li>
+                            <span class="check-icon" aria-hidden="true">
+                                <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M4 10l4 4 8-8" />
+                                </svg>
+                            </span>
+                            <span>MIT Licensed – commercial use allowed</span>
+                        </li>
+                        <li>
+                            <span class="check-icon" aria-hidden="true">
+                                <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M4 10l4 4 8-8" />
+                                </svg>
+                            </span>
+                            <span>Complete documentation &amp; examples</span>
+                        </li>
+                        <li>
+                            <span class="check-icon" aria-hidden="true">
+                                <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M4 10l4 4 8-8" />
+                                </svg>
+                            </span>
+                            <span>Active community support</span>
+                        </li>
+                        <li>
+                            <span class="check-icon" aria-hidden="true">
+                                <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M4 10l4 4 8-8" />
+                                </svg>
+                            </span>
+                            <span>No vendor lock-in</span>
+                        </li>
+                    </ul>
+                    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                        <a href="https://github.com/yourusername/solana-auth" class="btn-pricing btn-primary" style="flex: 1; min-width: 200px; max-width: 250px;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 0.5rem;">
+                                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                            </svg>
+                            View on GitHub
+                        </a>
+                        <a href="#docs" class="btn-pricing" style="flex: 1; min-width: 200px; max-width: 250px;">
+                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                <path class="fill-accent" d="M5 7.5C5 6.12 6.12 5 7.5 5H12v14H7.6C6.16 19 5 20.12 5 21.5V7.5Z" />
+                                <path class="fill-accent" d="M19 7.5C19 6.12 17.88 5 16.5 5H12v14h4.4c1.44 0 2.6 1.12 2.6 2.5V7.5Z" />
+                                <path d="M12 5v14" />
+                                <path d="M8.5 9.5H11" />
+                                <path d="M13 9.5h2.5" />
+                            </svg>
+                            <span>Read Documentation</span>
+                        </a>
+                    </div>
+                    <div style="margin-top: 2rem; padding: 1.5rem; background: var(--bg-darker); border-radius: 12px; border-left: 4px solid var(--cyan-primary);">
+                        <strong style="color: var(--cyan-primary);">Quick Start:</strong><br>
+                        <span style="color: var(--text-secondary); font-size: 0.875rem;">
+                            Clone repo → Deploy to Railway ($5/mo) → Live in 5 minutes
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Use Cases -->
+    <section class="use-cases">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Perfect For</h2>
+                <p class="section-subtitle">Plug X402 anti-drain auth into any Solana surface</p>
+            </div>
+            <div class="use-cases-grid">
+                <div class="use-case">
+                    <div class="use-case-icon icon-nft">
+                        <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path class="fill-accent" d="M24 6L40 22L24 38L8 22Z" />
+                            <rect x="16" y="16" width="16" height="16" rx="3" fill="none" />
+                            <circle cx="24" cy="24" r="4" fill="none" />
+                        </svg>
+                    </div>
+                    <h3>NFT Marketplaces</h3>
+                    <p>Verify wallet ownership before listing or trading NFTs</p>
+                </div>
+                <div class="use-case">
+                    <div class="use-case-icon icon-dao">
+                        <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path class="fill-accent" d="M24 9L38 17H10Z" />
+                            <line x1="12" y1="36" x2="36" y2="36" />
+                            <line x1="12" y1="22" x2="36" y2="22" />
+                            <line x1="16" y1="22" x2="16" y2="34" />
+                            <line x1="20" y1="22" x2="20" y2="34" />
+                            <line x1="24" y1="22" x2="24" y2="34" />
+                            <line x1="28" y1="22" x2="28" y2="34" />
+                            <line x1="32" y1="22" x2="32" y2="34" />
+                        </svg>
+                    </div>
+                    <h3>DAO Platforms</h3>
+                    <p>Authenticate members for voting and governance</p>
+                </div>
+                <div class="use-case">
+                    <div class="use-case-icon icon-games">
+                        <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path class="fill-accent" d="M16 20H32C35.9 20 38.5 22.7 38.5 26.6V29c0 3-2.4 5.4-5.4 5.4h-2.4l-3.4-4.1h-8.6l-3.4 4.1H15c-3 0-5.4-2.4-5.4-5.4v-2.4C9.6 22.7 12.3 20 16 20Z" />
+                            <line x1="20" y1="26" x2="20" y2="32" />
+                            <line x1="17" y1="29" x2="23" y2="29" />
+                            <circle cx="32" cy="29" r="2.5" fill="none" />
+                            <circle cx="36" cy="24" r="1.5" fill="none" />
+                        </svg>
+                    </div>
+                    <h3>Web3 Games</h3>
+                    <p>Secure player authentication and asset verification</p>
+                </div>
+                <div class="use-case">
+                    <div class="use-case-icon icon-defi">
+                        <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <ellipse class="fill-accent" cx="24" cy="18" rx="12" ry="6" />
+                            <path d="M12 18V28C12 31.3 17.4 34 24 34C30.6 34 36 31.3 36 28V18" fill="none" />
+                            <path d="M12 28C12 31.3 17.4 34 24 34C30.6 34 36 31.3 36 28" fill="none" />
+                            <path d="M12 24C12 27.3 17.4 30 24 30C30.6 30 36 27.3 36 24" fill="none" />
+                            <line x1="24" y1="14" x2="24" y2="26" />
+                        </svg>
+                    </div>
+                    <h3>DeFi Apps</h3>
+                    <p>Verify users before accessing financial protocols</p>
+                </div>
+                <div class="use-case">
+                    <div class="use-case-icon icon-gating">
+                        <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <rect class="fill-accent" x="14" y="22" width="20" height="16" rx="4" />
+                            <path d="M18 22V18C18 14.7 20.7 12 24 12C27.3 12 30 14.7 30 18V22" fill="none" />
+                            <circle cx="24" cy="29" r="3" fill="none" />
+                            <line x1="24" y1="29" x2="24" y2="33" />
+                        </svg>
+                    </div>
+                    <h3>Token Gating</h3>
+                    <p>Grant access based on wallet verification</p>
+                </div>
+                <div class="use-case">
+                    <div class="use-case-icon icon-dapps">
+                        <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <circle class="fill-accent" cx="24" cy="24" r="14" />
+                            <path d="M24 10C28 14 30 20 30 24C30 28 28 34 24 38" />
+                            <path d="M24 10C20 14 18 20 18 24C18 28 20 34 24 38" />
+                            <path d="M14 18H34" />
+                            <path d="M12 24H36" />
+                            <path d="M14 30H34" />
+                        </svg>
+                    </div>
+                    <h3>dApps</h3>
+                    <p>Any Solana application needing wallet auth</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <div class="container">
+            <div class="cta-content">
+                <h2>Ready to Ship X402 Auth?</h2>
+                <p>Follow the quick start and deploy signatureless, anti-drain logins in minutes.</p>
+                <div class="cta-buttons">
+                    <a href="https://github.com/yourusername/solana-auth" class="btn-large btn-primary">
+                        View Documentation
+                    </a>
+                    <a href="https://github.com/yourusername/solana-auth" class="btn-large btn-secondary">
+                        Clone Repository
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="logo">
+                        <img src="../logos/logotext.png" alt="SignLess" class="logo-image" style="height: 28px; width: auto;">
+                    </div>
+                    <p>X402-powered, anti-drain authentication for Solana.</p>
+                    <div class="social-links">
+                        <a href="https://github.com/yourusername/solana-auth" aria-label="GitHub">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                            </svg>
+                        </a>
+                        <a href="https://twitter.com/yourusername" aria-label="Twitter">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4>Product</h4>
+                    <a href="#features">Features</a>
+                    <a href="#how-it-works">How It Works</a>
+                    <a href="#pricing">Pricing</a>
+                    <a href="#docs">Documentation</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Resources</h4>
+                    <a href="https://github.com/yourusername/solana-auth">GitHub</a>
+                    <a href="#">API Reference</a>
+                    <a href="#">Examples</a>
+                    <a href="#">Blog</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Company</h4>
+                    <a href="#">About</a>
+                    <a href="mailto:contact@yourdomain.com">Contact</a>
+                    <a href="#">Privacy</a>
+                    <a href="#">Terms</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 SignLess. Open source under MIT License.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

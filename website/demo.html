@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SignLess - Live Demo</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .demo-container {
+            max-width: 600px;
+            margin: 100px auto;
+            padding: 2rem;
+        }
+        
+        .demo-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .demo-title {
+            font-family: var(--font-display);
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .demo-description {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+        
+        .demo-input {
+            width: 100%;
+            padding: 1rem;
+            background: var(--bg-darker);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .demo-input:focus {
+            outline: none;
+            border-color: var(--purple-primary);
+        }
+        
+        .demo-button {
+            width: 100%;
+            padding: 1rem;
+            background: var(--gradient-primary);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .demo-button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .demo-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .demo-status {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: var(--bg-darker);
+            border-radius: 8px;
+            border-left: 4px solid var(--purple-primary);
+        }
+        
+        .demo-status.success {
+            border-left-color: var(--green-success);
+        }
+        
+        .demo-status.error {
+            border-left-color: var(--red-error);
+        }
+        
+        .demo-note {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid var(--purple-primary);
+            border-radius: 8px;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-top: 2rem;
+            color: var(--purple-primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="demo-card">
+            <h1 class="demo-title">🔐 Live Demo</h1>
+            <p class="demo-description">
+                Enter your Solana wallet address to see how the authentication flow works
+            </p>
+            
+            <input 
+                type="text" 
+                id="walletInput" 
+                class="demo-input" 
+                placeholder="Enter Solana wallet address (e.g., ABC...XYZ)"
+                value=""
+            >
+            
+            <button id="authButton" class="demo-button" onclick="startAuth()">
+                Start Authentication
+            </button>
+            
+            <div id="status" class="demo-status" style="display: none;">
+                <strong>Status:</strong> <span id="statusText">-</span>
+            </div>
+            
+            <div class="demo-note">
+                <strong>⚠️ Demo Mode</strong><br>
+                This is a demonstration of the UI flow. To test with real Solana transactions, 
+                you'll need to deploy the backend API first.
+                <br><br>
+                <strong>Steps to make it work:</strong><br>
+                1. Deploy backend (see RAILWAY_QUICK_DEPLOY.md)<br>
+                2. Update API endpoint in this demo<br>
+                3. Connect your wallet (Phantom, Solflare, etc.)
+            </div>
+            
+            <a href="index.html" class="back-link">← Back to Main Site</a>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 0;
+        const steps = [
+            'Initiating authentication request...',
+            'Waiting for transaction from wallet...',
+            'Verifying transaction on Solana blockchain...',
+            'Authentication successful! ✅'
+        ];
+
+        async function startAuth() {
+            const walletInput = document.getElementById('walletInput');
+            const authButton = document.getElementById('authButton');
+            const statusDiv = document.getElementById('status');
+            const statusText = document.getElementById('statusText');
+            
+            const walletAddress = walletInput.value.trim();
+            
+            // Basic validation
+            if (!walletAddress) {
+                statusDiv.style.display = 'block';
+                statusDiv.className = 'demo-status error';
+                statusText.textContent = 'Please enter a wallet address';
+                return;
+            }
+            
+            if (walletAddress.length < 32) {
+                statusDiv.style.display = 'block';
+                statusDiv.className = 'demo-status error';
+                statusText.textContent = 'Invalid wallet address format';
+                return;
+            }
+            
+            // Disable button and show progress
+            authButton.disabled = true;
+            authButton.textContent = 'Processing...';
+            statusDiv.style.display = 'block';
+            statusDiv.className = 'demo-status';
+            currentStep = 0;
+            
+            // Simulate the authentication flow
+            for (let i = 0; i < steps.length; i++) {
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                statusText.textContent = steps[i];
+                
+                if (i === steps.length - 1) {
+                    statusDiv.className = 'demo-status success';
+                }
+            }
+            
+            // Re-enable button
+            setTimeout(() => {
+                authButton.disabled = false;
+                authButton.textContent = 'Try Again';
+            }, 2000);
+        }
+        
+        // Allow Enter key to submit
+        document.getElementById('walletInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                startAuth();
+            }
+        });
+        
+        // Demo wallet address for testing
+        window.addEventListener('load', () => {
+            document.getElementById('walletInput').value = 'DemoWallet1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefgh';
+        });
+    </script>
+</body>
+</html>

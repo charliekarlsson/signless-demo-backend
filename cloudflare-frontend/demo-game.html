@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pong Game - SignLess Demo</title>
+    <link rel="icon" type="image/png" href="logos/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .header {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-section img {
+            height: 48px;
+            width: auto;
+        }
+
+        .logo-section h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 24px;
+            background: linear-gradient(135deg, #a78bfa 0%, #06b6d4 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(167, 139, 250, 0.3);
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+        }
+
+        .wallet-address {
+            font-family: 'Space Grotesk', monospace;
+            font-size: 14px;
+            color: #a78bfa;
+        }
+
+        .logout-btn {
+            padding: 8px 16px;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 8px;
+            color: #fca5a5;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.5);
+        }
+
+        .auth-container {
+            width: 100%;
+            max-width: 500px;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(167, 139, 250, 0.2);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            text-align: center;
+            margin-top: 100px;
+        }
+
+        .auth-container h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 32px;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #a78bfa 0%, #06b6d4 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .auth-container p {
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+
+        .auth-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #a78bfa 0%, #06b6d4 100%);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .auth-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(167, 139, 250, 0.3);
+        }
+
+        .auth-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .game-container {
+            width: 100%;
+            max-width: 1200px;
+            display: none;
+        }
+
+        .game-container.active {
+            display: block;
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(167, 139, 250, 0.2);
+            border-radius: 16px;
+            margin-bottom: 20px;
+        }
+
+        .score {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 48px;
+            font-weight: 700;
+            color: #a78bfa;
+        }
+
+        .game-status {
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        #gameCanvas {
+            width: 100%;
+            max-width: 1200px;
+            height: 600px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(167, 139, 250, 0.3);
+            border-radius: 16px;
+            display: block;
+            cursor: none;
+        }
+
+        .controls {
+            margin-top: 20px;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+        }
+
+        .status-message {
+            margin-top: 15px;
+            padding: 12px;
+            background: rgba(167, 139, 250, 0.1);
+            border: 1px solid rgba(167, 139, 250, 0.3);
+            border-radius: 8px;
+            font-size: 14px;
+            color: #a78bfa;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .loading {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border: 2px solid rgba(167, 139, 250, 0.3);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 28px;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #a78bfa 0%, #06b6d4 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .modal-body {
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .modal-info-box {
+            background: rgba(167, 139, 250, 0.1);
+            border: 1px solid rgba(167, 139, 250, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .modal-info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .modal-info-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .modal-info-label {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+        }
+
+        .modal-info-value {
+            font-family: 'Space Grotesk', monospace;
+            color: #a78bfa;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .modal-address {
+            font-family: 'Space Grotesk', monospace;
+            font-size: 13px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 8px;
+            word-break: break-all;
+            user-select: all;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-address:hover {
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-btn-primary {
+            background: linear-gradient(135deg, #a78bfa 0%, #06b6d4 100%);
+            color: white;
+        }
+
+        .modal-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(167, 139, 250, 0.3);
+        }
+
+        .modal-btn-secondary {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+        }
+
+        .modal-btn-secondary:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.5);
+        }
+
+        .copy-indicator {
+            display: inline-block;
+            margin-left: 8px;
+            color: #86efac;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .copy-indicator.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <!-- Modal Overlay -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-content">
+            <div class="modal-header">🌐 127.0.0.1:5500</div>
+            <div class="modal-body">
+                <p style="margin-bottom: 20px;">Enter your Solana wallet address:</p>
+                <input 
+                    type="text" 
+                    id="modalWalletInput" 
+                    placeholder="Your Solana wallet address"
+                    style="width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(167, 139, 250, 0.3); border-radius: 8px; color: white; font-family: 'Space Grotesk', monospace; font-size: 14px; margin-bottom: 20px;"
+                />
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-primary" id="modalOkBtn">OK</button>
+                <button class="modal-btn modal-btn-secondary" id="modalCancelBtn">Avbryt</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="header">
+        <div class="logo-section">
+            <a href="index.html" style="display: flex; align-items: center; gap: 15px; text-decoration: none; color: inherit;">
+                <img src="logos/logotext.png" alt="SignLess" style="cursor: pointer;">
+                <h1>Pong Demo</h1>
+            </a>
+        </div>
+        <div class="user-info hidden" id="userInfo">
+            <span class="wallet-address" id="walletDisplay">Not connected</span>
+            <button class="logout-btn" id="logoutBtn">Logout</button>
+        </div>
+    </div>
+
+    <!-- Authentication Screen -->
+    <div class="auth-container" id="authContainer">
+        <h2>🏓 Pong Game</h2>
+        <p>Authenticate by sending a micro-transaction from your Solana wallet</p>
+        <button class="auth-btn" id="connectBtn">Start Authentication</button>
+        <div class="status-message hidden" id="statusMessage">Connecting...</div>
+    </div>
+
+    <!-- Game Screen -->
+    <div class="game-container" id="gameContainer">
+        <div class="game-info">
+            <div>
+                <div style="font-size: 14px; color: rgba(255,255,255,0.5); margin-bottom: 5px;">YOU</div>
+                <div class="score" id="playerScore">0</div>
+            </div>
+            <div class="game-status" id="gameStatus">Move your mouse to control the paddle</div>
+            <div>
+                <div style="font-size: 14px; color: rgba(255,255,255,0.5); margin-bottom: 5px;">BOT</div>
+                <div class="score" id="botScore">0</div>
+            </div>
+        </div>
+        <canvas id="gameCanvas"></canvas>
+        <div class="controls">
+            Move your mouse up and down to control your paddle • First to 5 points wins!
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+    
+    <script>
+        // API Configuration
+        const API_URL = 'https://signless-demo-backend-production.up.railway.app';
+        
+        // DOM Elements
+        const authContainer = document.getElementById('authContainer');
+        const gameContainer = document.getElementById('gameContainer');
+        const connectBtn = document.getElementById('connectBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const statusMessage = document.getElementById('statusMessage');
+        const userInfo = document.getElementById('userInfo');
+        const walletDisplay = document.getElementById('walletDisplay');
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const playerScoreEl = document.getElementById('playerScore');
+        const botScoreEl = document.getElementById('botScore');
+        const gameStatusEl = document.getElementById('gameStatus');
+
+        // Game State
+        let sessionId = null;
+        let walletAddress = null;
+        let gameState = {
+            playerY: 250,
+            botY: 250,
+            ballX: 400,
+            ballY: 300,
+            ballSpeedX: 5,
+            ballSpeedY: 5,
+            playerScore: 0,
+            botScore: 0,
+            gameRunning: false
+        };
+
+        // Canvas setup
+        function resizeCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // Authentication
+        connectBtn.addEventListener('click', authenticateWallet);
+        logoutBtn.addEventListener('click', logout);
+
+        // Modal elements
+        const modalOverlay = document.getElementById('modalOverlay');
+        const modalWalletInput = document.getElementById('modalWalletInput');
+        const modalOkBtn = document.getElementById('modalOkBtn');
+        const modalCancelBtn = document.getElementById('modalCancelBtn');
+
+        let checkInterval = null;
+        let walletInputResolve = null;
+
+        // Modal functions
+        function showWalletModal() {
+            return new Promise((resolve) => {
+                walletInputResolve = resolve;
+                modalOverlay.classList.add('active');
+                modalWalletInput.value = '';
+                modalWalletInput.focus();
+            });
+        }
+
+        function hideWalletModal() {
+            modalOverlay.classList.remove('active');
+        }
+
+        modalOkBtn.addEventListener('click', () => {
+            const value = modalWalletInput.value.trim();
+            if (value && walletInputResolve) {
+                walletInputResolve(value);
+                hideWalletModal();
+            }
+        });
+
+        modalCancelBtn.addEventListener('click', () => {
+            if (walletInputResolve) {
+                walletInputResolve(null);
+                hideWalletModal();
+            }
+        });
+
+        modalWalletInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                modalOkBtn.click();
+            }
+        });
+
+        async function authenticateWallet() {
+            try {
+                connectBtn.disabled = true;
+                statusMessage.classList.remove('hidden');
+                
+                // Get wallet address from custom modal
+                statusMessage.textContent = 'Enter your wallet address';
+                const walletInput = await showWalletModal();
+                
+                if (!walletInput) {
+                    throw new Error('Wallet address required');
+                }
+                
+                walletAddress = walletInput.trim();
+
+                // Step 1: Initiate authentication
+                statusMessage.textContent = 'Initiating authentication...';
+                const initResponse = await fetch(`${API_URL}/api/auth/initiate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ walletAddress })
+                });
+
+                if (!initResponse.ok) throw new Error('Failed to initiate authentication');
+                
+                const authData = await initResponse.json();
+                sessionId = authData.sessionId;
+
+                // Step 2: Show transaction details modal
+                showTransactionModal(authData);
+
+            } catch (error) {
+                console.error('Authentication error:', error);
+                statusMessage.textContent = `Error: ${error.message}`;
+                statusMessage.style.background = 'rgba(239, 68, 68, 0.1)';
+                statusMessage.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+                statusMessage.style.color = '#fca5a5';
+                connectBtn.disabled = false;
+            }
+        }
+
+        function showTransactionModal(authData) {
+            // Update modal content to show transaction details
+            const modalContent = modalOverlay.querySelector('.modal-content');
+            modalContent.innerHTML = `
+                <div class="modal-header">📋 Send Transaction</div>
+                <div class="modal-body">
+                    <p style="color: rgba(255, 255, 255, 0.8); margin-bottom: 20px;">
+                        Send this micro-transaction from your Solana wallet:
+                    </p>
+                    <div class="modal-info-box">
+                        <div class="modal-info-row">
+                            <span class="modal-info-label">Amount:</span>
+                            <span class="modal-info-value" onclick="copyAmount('${authData.expectedAmount}')" style="cursor: pointer;" title="Click to copy">
+                                ${authData.expectedAmount} SOL
+                                <span class="copy-indicator" id="copyAmountIndicator">✓ Copied!</span>
+                            </span>
+                        </div>
+                        <div style="margin: 15px 0;">
+                            <div class="modal-info-label" style="margin-bottom: 8px;">To Address:</div>
+                            <div class="modal-address" onclick="copyAddress('${authData.receiverAddress}')" title="Click to copy">
+                                ${authData.receiverAddress}
+                                <span class="copy-indicator" id="copyIndicator">✓ Copied!</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="background: rgba(167, 139, 250, 0.1); border: 1px solid rgba(167, 139, 250, 0.3); border-radius: 10px; padding: 12px; margin: 15px 0; font-size: 13px; color: rgba(255, 255, 255, 0.7);">
+                        💡 <strong>For Developers:</strong> When integrating SignLess, ensure your receiving wallet is funded with at least 0.001 SOL to cover rent-exemption requirements. This allows the wallet to accept micro-transactions and prevents Phantom's minimum transfer restrictions.
+                    </div>
+                    <p style="color: rgba(255, 255, 255, 0.6); font-size: 14px; margin-top: 15px;">
+                        <em>Click the address to copy it to your clipboard</em>
+                    </p>
+                </div>
+                <div class="modal-buttons">
+                    <button class="modal-btn modal-btn-primary" onclick="startPolling('${authData.sessionId}'); hideTransactionModal();">
+                        I've sent it
+                    </button>
+                </div>
+            `;
+            modalOverlay.classList.add('active');
+        }
+
+        window.hideTransactionModal = function() {
+            modalOverlay.classList.remove('active');
+            statusMessage.textContent = `Waiting for transaction from ${walletAddress.slice(0, 4)}...${walletAddress.slice(-4)}`;
+        };
+
+        window.copyAddress = function(address) {
+            navigator.clipboard.writeText(address).then(() => {
+                const indicator = document.getElementById('copyIndicator');
+                if (indicator) {
+                    indicator.classList.add('show');
+                    setTimeout(() => {
+                        indicator.classList.remove('show');
+                    }, 2000);
+                }
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+            });
+        };
+
+        window.copyAmount = function(amount) {
+            navigator.clipboard.writeText(amount).then(() => {
+                const indicator = document.getElementById('copyAmountIndicator');
+                if (indicator) {
+                    indicator.classList.add('show');
+                    setTimeout(() => {
+                        indicator.classList.remove('show');
+                    }, 2000);
+                }
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+            });
+        };
+
+        function startPolling(sid) {
+            let attempts = 0;
+            const maxAttempts = 180; // 15 minutes (5 second intervals)
+
+            checkInterval = setInterval(async () => {
+                attempts++;
+
+                try {
+                    const response = await fetch(`${API_URL}/api/auth/status/${sid}`);
+                    const data = await response.json();
+
+                    if (data.status === 'verified') {
+                        clearInterval(checkInterval);
+                        localStorage.setItem('sessionId', sid);
+                        localStorage.setItem('walletAddress', walletAddress);
+                        statusMessage.textContent = '✅ Authenticated! Loading game...';
+                        statusMessage.style.background = 'rgba(34, 197, 94, 0.1)';
+                        statusMessage.style.borderColor = 'rgba(34, 197, 94, 0.3)';
+                        statusMessage.style.color = '#86efac';
+                        setTimeout(showGame, 1000);
+                    } else if (attempts >= maxAttempts) {
+                        clearInterval(checkInterval);
+                        throw new Error('Authentication timeout. Please try again.');
+                    }
+                } catch (error) {
+                    clearInterval(checkInterval);
+                    console.error('Polling error:', error);
+                    statusMessage.textContent = `Error: ${error.message}`;
+                    statusMessage.style.background = 'rgba(239, 68, 68, 0.1)';
+                    statusMessage.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+                    statusMessage.style.color = '#fca5a5';
+                    connectBtn.disabled = false;
+                }
+            }, 5000); // Check every 5 seconds
+        }
+
+        function showGame() {
+            authContainer.style.display = 'none';
+            gameContainer.classList.add('active');
+            userInfo.classList.remove('hidden');
+            walletDisplay.textContent = `${walletAddress.slice(0, 4)}...${walletAddress.slice(-4)}`;
+            
+            // Wait for DOM to update, then resize canvas and start game
+            setTimeout(() => {
+                resizeCanvas();
+                startGame();
+            }, 50);
+        }
+
+        function logout() {
+            if (checkInterval) {
+                clearInterval(checkInterval);
+            }
+            localStorage.removeItem('sessionId');
+            localStorage.removeItem('walletAddress');
+            sessionId = null;
+            walletAddress = null;
+            authContainer.style.display = 'block';
+            gameContainer.classList.remove('active');
+            userInfo.classList.add('hidden');
+            statusMessage.classList.add('hidden');
+            statusMessage.style.background = 'rgba(167, 139, 250, 0.1)';
+            statusMessage.style.borderColor = 'rgba(167, 139, 250, 0.3)';
+            statusMessage.style.color = '#a78bfa';
+            connectBtn.disabled = false;
+            gameState.gameRunning = false;
+            resetGame();
+        }
+
+        // Check for existing session on load
+        window.addEventListener('load', async () => {
+            const savedSession = localStorage.getItem('sessionId');
+            const savedWallet = localStorage.getItem('walletAddress');
+            
+            if (savedSession && savedWallet) {
+                try {
+                    const response = await fetch(`${API_URL}/api/auth/status/${savedSession}`);
+                    const data = await response.json();
+                    
+                    if (data.status === 'verified') {
+                        sessionId = savedSession;
+                        walletAddress = savedWallet;
+                        showGame();
+                    }
+                } catch (error) {
+                    console.error('Session check failed:', error);
+                }
+            }
+        });
+
+        // Game Logic
+        const PADDLE_HEIGHT = 100;
+        const PADDLE_WIDTH = 15;
+        const BALL_SIZE = 15;
+
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            gameState.playerY = e.clientY - rect.top - PADDLE_HEIGHT / 2;
+            gameState.playerY = Math.max(0, Math.min(canvas.height - PADDLE_HEIGHT, gameState.playerY));
+        });
+
+        function startGame() {
+            gameState.gameRunning = true;
+            resetBall();
+            gameLoop();
+        }
+
+        function resetGame() {
+            gameState.playerScore = 0;
+            gameState.botScore = 0;
+            gameState.playerY = canvas.height / 2 - PADDLE_HEIGHT / 2;
+            gameState.botY = canvas.height / 2 - PADDLE_HEIGHT / 2;
+            resetBall();
+            updateScores();
+        }
+
+        function resetBall() {
+            gameState.ballX = canvas.width / 2;
+            gameState.ballY = canvas.height / 2;
+            gameState.ballSpeedX = (Math.random() > 0.5 ? 1 : -1) * 5;
+            gameState.ballSpeedY = (Math.random() - 0.5) * 8;
+        }
+
+        function updateBot() {
+            // Simple AI: follow the ball
+            const botCenter = gameState.botY + PADDLE_HEIGHT / 2;
+            const diff = gameState.ballY - botCenter;
+            
+            if (Math.abs(diff) > 2) {
+                gameState.botY += diff * 0.1; // Bot speed
+            }
+            
+            gameState.botY = Math.max(0, Math.min(canvas.height - PADDLE_HEIGHT, gameState.botY));
+        }
+
+        function updateBall() {
+            gameState.ballX += gameState.ballSpeedX;
+            gameState.ballY += gameState.ballSpeedY;
+
+            // Top and bottom collision
+            if (gameState.ballY <= 0 || gameState.ballY >= canvas.height - BALL_SIZE) {
+                gameState.ballSpeedY *= -1;
+            }
+
+            // Player paddle collision
+            if (gameState.ballX <= PADDLE_WIDTH + BALL_SIZE &&
+                gameState.ballY >= gameState.playerY &&
+                gameState.ballY <= gameState.playerY + PADDLE_HEIGHT) {
+                gameState.ballSpeedX = Math.abs(gameState.ballSpeedX) + 0.5;
+                gameState.ballSpeedY += (Math.random() - 0.5) * 2;
+            }
+
+            // Bot paddle collision
+            if (gameState.ballX >= canvas.width - PADDLE_WIDTH - BALL_SIZE * 2 &&
+                gameState.ballY >= gameState.botY &&
+                gameState.ballY <= gameState.botY + PADDLE_HEIGHT) {
+                gameState.ballSpeedX = -Math.abs(gameState.ballSpeedX) - 0.5;
+                gameState.ballSpeedY += (Math.random() - 0.5) * 2;
+            }
+
+            // Score points
+            if (gameState.ballX < 0) {
+                gameState.botScore++;
+                updateScores();
+                checkWinner();
+                resetBall();
+            }
+            if (gameState.ballX > canvas.width) {
+                gameState.playerScore++;
+                updateScores();
+                checkWinner();
+                resetBall();
+            }
+        }
+
+        function updateScores() {
+            playerScoreEl.textContent = gameState.playerScore;
+            botScoreEl.textContent = gameState.botScore;
+        }
+
+        function checkWinner() {
+            if (gameState.playerScore >= 5) {
+                gameStatusEl.textContent = '🎉 You Win!';
+                gameState.gameRunning = false;
+                setTimeout(() => {
+                    resetGame();
+                    gameStatusEl.textContent = 'Move your mouse to control the paddle';
+                    startGame();
+                }, 3000);
+            } else if (gameState.botScore >= 5) {
+                gameStatusEl.textContent = '😢 Bot Wins! Try Again';
+                gameState.gameRunning = false;
+                setTimeout(() => {
+                    resetGame();
+                    gameStatusEl.textContent = 'Move your mouse to control the paddle';
+                    startGame();
+                }, 3000);
+            }
+        }
+
+        function draw() {
+            // Clear canvas
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw center line
+            ctx.strokeStyle = 'rgba(167, 139, 250, 0.2)';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([10, 10]);
+            ctx.beginPath();
+            ctx.moveTo(canvas.width / 2, 0);
+            ctx.lineTo(canvas.width / 2, canvas.height);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Draw player paddle (left)
+            const gradient1 = ctx.createLinearGradient(0, gameState.playerY, 0, gameState.playerY + PADDLE_HEIGHT);
+            gradient1.addColorStop(0, '#a78bfa');
+            gradient1.addColorStop(1, '#06b6d4');
+            ctx.fillStyle = gradient1;
+            ctx.fillRect(10, gameState.playerY, PADDLE_WIDTH, PADDLE_HEIGHT);
+
+            // Draw bot paddle (right)
+            const gradient2 = ctx.createLinearGradient(0, gameState.botY, 0, gameState.botY + PADDLE_HEIGHT);
+            gradient2.addColorStop(0, '#06b6d4');
+            gradient2.addColorStop(1, '#a78bfa');
+            ctx.fillStyle = gradient2;
+            ctx.fillRect(canvas.width - PADDLE_WIDTH - 10, gameState.botY, PADDLE_WIDTH, PADDLE_HEIGHT);
+
+            // Draw ball
+            ctx.fillStyle = '#ffffff';
+            ctx.shadowColor = '#a78bfa';
+            ctx.shadowBlur = 15;
+            ctx.beginPath();
+            ctx.arc(gameState.ballX, gameState.ballY, BALL_SIZE, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+        }
+
+        function gameLoop() {
+            if (!gameState.gameRunning) return;
+
+            updateBot();
+            updateBall();
+            draw();
+
+            requestAnimationFrame(gameLoop);
+        }
+    </script>
+</body>
+</html>

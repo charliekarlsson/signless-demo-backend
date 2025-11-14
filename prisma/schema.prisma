@@ -1,0 +1,60 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  merchant     Merchant?
+}
+
+model Merchant {
+  id           String     @id @default(cuid())
+  userId       String     @unique
+  user         User       @relation(fields: [userId], references: [id])
+  displayName  String
+  slug         String     @unique
+  primaryEmail String
+  branding     Json
+  webhookUrl   String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  checkouts    Checkout[]
+  apiKeys      ApiKey[]
+}
+
+model Checkout {
+  id           String    @id @default(cuid())
+  merchantId   String
+  merchant     Merchant  @relation(fields: [merchantId], references: [id])
+  name         String
+  slug         String
+  description  String?
+  amountMinor  BigInt
+  currency     String
+  scheme       String
+  network      String
+  assetAddress String
+  metadata     Json
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@unique([merchantId, slug])
+}
+
+model ApiKey {
+  id          String   @id @default(cuid())
+  merchantId  String
+  merchant    Merchant @relation(fields: [merchantId], references: [id])
+  key         String   @unique
+  createdAt   DateTime @default(now())
+  lastUsedAt  DateTime?
+}

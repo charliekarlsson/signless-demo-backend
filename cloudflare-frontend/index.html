@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SignLess Managed Checkout Platform</title>
+    <meta name="description" content="Launch a managed X402 checkout in minutes. SignLess hosts the widget, sessions, watcher, and webhooks so merchants only set a wallet address.">
+    <link rel="icon" type="image/png" href="logos/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container header-content">
+            <a class="brand" href="#intro" aria-label="SignLess home">
+                <img src="logos/logotext.png" alt="SignLess" class="brand-mark">
+            </a>
+            <nav class="primary-nav" aria-label="Main navigation">
+                <a href="#intro">Overview</a>
+                <a href="#platform">Platform</a>
+                <a href="#how-it-works">How it works</a>
+                <a href="#automation">Automation</a>
+                <a href="#usecases">Use cases</a>
+                <a href="#dashboard">Dashboard</a>
+                <a href="demo-game.html">Demo</a>
+                <a href="#waitlist" class="nav-highlight">Waitlist</a>
+            </nav>
+            <div class="header-actions">
+                <a class="nav-link" href="https://x.com/Signlessnet" target="_blank" rel="noopener" aria-label="SignLess on X">
+                    <span aria-hidden="true">X</span>
+                </a>
+                <a class="btn-secondary" href="https://github.com/charliekarlsson/signless-solana" target="_blank" rel="noopener">
+                    GitHub
+                </a>
+                <a class="btn-primary" href="../frontend/index.html">
+                    Open dashboard preview
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main id="intro">
+        <section class="hero">
+            <div class="container hero-grid">
+                <div class="hero-copy reveal">
+                    <span class="section-tag">[ Managed X402 checkout ]</span>
+                    <h1 class="headline-xxl">Let us run your onchain checkout</h1>
+                    <p class="lede">SignLess is the fully managed way to sell with wallets. Create a merchant account, point us to your receiver wallet, and we’ll handle the hosted widget, session engine, watcher, and webhooks so you never touch blind signing.</p>
+                    <div class="hero-actions">
+                        <a class="btn-primary" href="#waitlist">Join managed beta</a>
+                        <a class="btn-secondary" href="../frontend/index.html">Preview merchant dashboard</a>
+                        <button class="btn-outline" type="button" onclick="copyWaitlistEmail()">Copy waitlist email</button>
+                    </div>
+                    <div class="hero-meta">
+                        <div>
+                            <span class="meta-label">Go-live time</span>
+                            <span class="meta-value">Under 15 min</span>
+                        </div>
+                        <div>
+                            <span class="meta-label">Chains supported</span>
+                            <span class="meta-value">Solana · EVM · more</span>
+                        </div>
+                        <div>
+                            <span class="meta-label">What we manage</span>
+                            <span class="meta-value">Widget • Sessions • Watcher</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="hero-visual reveal" aria-hidden="true">
+                    <div class="hero-orbit"></div>
+                    <article class="glow-card hero-panel">
+                        <span class="panel-tag">Managed stack</span>
+                        <h3>Checkout → Session → Settlement</h3>
+                        <ul class="panel-list">
+                            <li>
+                                <span class="list-dot" aria-hidden="true"></span>
+                                Merchants configure receiver wallet, branding, and redirects inside the dashboard.
+                            </li>
+                            <li>
+                                <span class="list-dot" aria-hidden="true"></span>
+                                The hosted widget spins up shopper sessions and collects proofs without blind signing.
+                            </li>
+                            <li>
+                                <span class="list-dot" aria-hidden="true"></span>
+                                Watcher infrastructure monitors the chain, triggers webhooks, and finalizes payouts automatically.
+                            </li>
+                        </ul>
+                        <div class="panel-footer">
+                            <span class="mono-label">Live session</span>
+                            <div class="panel-pills">
+                                <span>Merchant&nbsp;#ACME</span>
+                                <span>25&nbsp;USDC</span>
+                                <span>Settled&nbsp;in&nbsp;18s</span>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </div>
+            <div class="hero-marquee" aria-hidden="true">
+                <div class="marquee-track">
+                    <span class="meta-pill">Managed watcher uptime 24/7</span>
+                    <span class="meta-pill">Hosted widget + session API</span>
+                    <span class="meta-pill">Multi-chain from day one</span>
+                    <span class="meta-pill">No blind signing ever</span>
+                    <span class="meta-pill">Merchant dashboard included</span>
+                    <span class="meta-pill">Managed watcher uptime 24/7</span>
+                    <span class="meta-pill">Hosted widget + session API</span>
+                    <span class="meta-pill">Settlement alerts and webhooks</span>
+                    <span class="meta-pill">Multi-chain from day one</span>
+                    <span class="meta-pill">Merchant dashboard included</span>
+                </div>
+            </div>
+        </section>
+
+        <section id="platform" class="autonomy">
+            <div class="container split">
+                <div class="stack reveal">
+                    <span class="section-tag">[ What we run for you ]</span>
+                    <h2 class="headline-xl">Hosted checkout infrastructure without the ops burden</h2>
+                    <p>Instead of exporting code, the managed SignLess platform keeps every mission-critical component online. You focus on your product—we maintain the pipelines that clear funds and keep ledgers honest.</p>
+                    <ul class="bullet-list">
+                        <li>Hosted X402 widget renders your branded checkout on any site or as a hosted link.</li>
+                        <li>Session management, memo generation, and proof verification handled by our API.</li>
+                        <li>Watcher and webhook delivery monitored by SignLess with alerts when anything drifts.</li>
+                    </ul>
+                    <div class="stack-actions">
+                        <a class="btn-outline" href="#how-it-works">See the managed flow</a>
+                    </div>
+                </div>
+                <div class="feature-stack">
+                    <article class="glow-card image-card reveal" data-variant="cyan">
+                        <span class="card-tag">[ Hosted widget ]</span>
+                        <h3>One line embed</h3>
+                        <p>Drop a script or send shoppers to <code>pay.signless.xyz</code>. We version and ship the UX so you never rebuild.</p>
+                    </article>
+                    <article class="glow-card image-card reveal" data-variant="violet">
+                        <span class="card-tag">[ Session engine ]</span>
+                        <h3>Proof-first ledger</h3>
+                        <p>Our session API creates invoices, attaches memos, and finalizes settlements across Solana, EVM, and beyond.</p>
+                    </article>
+                    <article class="glow-card image-card reveal" data-variant="slate">
+                        <span class="card-tag">[ Merchant portal ]</span>
+                        <h3>Clear oversight</h3>
+                        <p>Monitor transactions, resend webhooks, and manage team access from the dashboard—no CLI required.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section id="how-it-works" class="machine">
+            <div class="container">
+                <div class="section-head reveal">
+                    <span class="section-tag">[ Managed flow ]</span>
+                    <h2 class="headline-xl">Go live in three simple moves</h2>
+                    <p>Merchants configure once inside the dashboard. Shoppers pay through the SignLess widget while our watcher clears the ledger and notifies you instantly.</p>
+                </div>
+                <div class="step-grid">
+                    <article class="step-card reveal" data-index="01">
+                        <span class="step-label">01</span>
+                        <h3>Create merchant account</h3>
+                        <p>Verify wallet ownership, brand the checkout, and set pricing plus success redirects inside the dashboard.</p>
+                        <code class="code-snippet">{
+  "merchantId": "acme-01",
+  "receiverWallet": "Gk3...s91",
+  "checkout": {
+    "slug": "default",
+    "amount": "25 USDC",
+    "successRedirect": "https://acme.com/thanks"
+  }
+}</code>
+                    </article>
+                    <article class="step-card reveal" data-index="02">
+                        <span class="step-label">02</span>
+                        <h3>Embed or link the checkout</h3>
+                        <p>Drop our script tag on any page or share a hosted checkout URL. SignLess handles session creation and wallet prompts.</p>
+                        <div class="step-pill">Script tag • Hosted page • API key</div>
+                    </article>
+                    <article class="step-card reveal" data-index="03">
+                        <span class="step-label">03</span>
+                        <h3>Let the watcher settle</h3>
+                        <p>Our chain-native watcher listens for transfers, finalizes sessions, triggers webhooks, and updates analytics without you touching infra.</p>
+                        <div class="step-pill status">Status: <span>settled + notified</span></div>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section id="automation" class="advanced">
+            <div class="container split">
+                <div class="stack reveal">
+                    <span class="section-tag">[ Automations & safeguards ]</span>
+                    <h2 class="headline-xl">Stay informed with alerts, retries, and audit trails</h2>
+                    <p>We run the operations playbook behind the scenes—multi-provider RPC, webhook queuing, and rate limiting—so your team can focus on delivering product value.</p>
+                    <ul class="bullet-list">
+                        <li>Automatic failover across multiple RPC endpoints with latency-aware routing.</li>
+                        <li>Webhook retries, signing, and dead-letter queues so partners never miss a status change.</li>
+                        <li>Real-time alerts when sessions linger, payouts fail, or memos are reused.</li>
+                    </ul>
+                </div>
+                <aside class="glow-card reveal" aria-label="Managed configuration options">
+                    <span class="card-tag">[ Managed config ]</span>
+                    <h3>watcher-pipeline.yaml</h3>
+                    <code class="code-snippet">pipeline:
+  rpcProviders:
+    - helius-mainnet
+    - quicknode-global
+  notify:
+    webhook: true
+    email: true
+  sla:
+    settleThreshold: 30s
+    alertChannel: "#checkout-ops"</code>
+                    <p class="token-note">Your dashboard exposes every automation toggle—no cron jobs or secret juggling required.</p>
+                </aside>
+            </div>
+        </section>
+
+        <section id="usecases" class="usecases">
+            <div class="container">
+                <div class="section-head reveal">
+                    <span class="section-tag">[ Fits every merchant ]</span>
+                    <h2 class="headline-xl">Launch trusted onchain payments without hiring an infra team</h2>
+                    <p>Our managed platform powers wallet-first revenue across digital downloads, memberships, live events, and more—with auditable receipts baked in.</p>
+                </div>
+                <div class="case-grid">
+                    <article class="case-card reveal" data-theme="vision">
+                        <h3>Digital goods</h3>
+                        <p>Deliver software, plugins, and onchain unlocks through hosted checkout links or embeds.</p>
+                    </article>
+                    <article class="case-card reveal" data-theme="data">
+                        <h3>Ticketing &amp; passes</h3>
+                        <p>Sync wallet verification and QR fulfillment with automatic settlement alerts.</p>
+                    </article>
+                    <article class="case-card reveal" data-theme="expertise">
+                        <h3>SaaS &amp; subscriptions</h3>
+                        <p>Gate dashboards, APIs, or premium features with instant wallet proofs—no OAuth maze.</p>
+                    </article>
+                    <article class="case-card reveal" data-theme="models">
+                        <h3>Gaming &amp; loyalty</h3>
+                        <p>Reward wallets, unlock boosts, and fight drainers with provable wallet ownership flows.</p>
+                    </article>
+                    <article class="case-card reveal" data-theme="compute">
+                        <h3>DAO tooling</h3>
+                        <p>Automate proposal fees, contributor payouts, and vote unlocks with webhook callbacks.</p>
+                    </article>
+                    <article class="case-card reveal" data-theme="knowledge">
+                        <h3>Creator memberships</h3>
+                        <p>Offer communities, courses, or IRL perks where every member verifies through a clear invoice.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section id="dashboard" class="protocol">
+            <div class="container split">
+                <div class="stack reveal">
+                    <span class="section-tag">[ Merchant dashboard ]</span>
+                    <h2 class="headline-xl">Everything you need to run onchain revenue</h2>
+                    <p>The dashboard brings together checkout creation, analytics, and team permissions while our backend keeps the watcher humming. Multi-tenant from day one, SOC2-minded from the roadmap.</p>
+                    <div class="protocol-points">
+                        <article class="point">
+                            <span class="card-tag">[ Real-time analytics ]</span>
+                            <p>Track conversions, average settlement time, and retry performance across every checkout.</p>
+                        </article>
+                        <article class="point">
+                            <span class="card-tag">[ Developer friendly ]</span>
+                            <p>Issue API keys, configure webhooks, and preview payloads directly in the UI before you push code.</p>
+                        </article>
+                        <article class="point">
+                            <span class="card-tag">[ Secure by design ]</span>
+                            <p>Encrypted secrets, scope-limited access, and chain-level audit history built into every session.</p>
+                        </article>
+                    </div>
+                </div>
+                <div class="glow-card protocol-visual reveal" aria-hidden="true">
+                    <div class="visual-grid">
+                        <div class="visual-chip">Session logs</div>
+                        <div class="visual-chip">Webhook monitor</div>
+                        <div class="visual-chip">Team roles</div>
+                        <div class="visual-chip">Multi-chain</div>
+                        <div class="visual-chip">Analytics</div>
+                        <div class="visual-chip">Exports</div>
+                    </div>
+                    <div class="visual-footer">
+                        <span class="mono-label">Operate with clarity</span>
+                        <p>One place to view sessions, resend webhooks, and switch chains. No cron jobs, no pager alerts, no new hires.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="token" class="token-cta">
+            <div class="container token-grid">
+                <div class="token-copy reveal reveal-left">
+                    <span class="section-tag">[ Community powered ]</span>
+                    <h2 class="headline-xl">$SIGNLESS backs managed infrastructure</h2>
+                    <p>The token funds hosted runtimes, watcher redundancy, and RPC credits so every merchant can rely on SignLess without an enterprise contract.</p>
+                    <div class="token-actions">
+                        <a class="btn-primary" href="https://pump.fun/coin/9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump" target="_blank" rel="noopener">View on Pump.fun</a>
+                        <a class="btn-outline" href="https://dexscreener.com/solana/9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump" target="_blank" rel="noopener">Chart on Dexscreener</a>
+                    </div>
+                    <ul class="token-info-grid reveal" aria-label="$SIGNLESS utility highlights">
+                        <li class="token-info">
+                            <span class="token-info-icon" aria-hidden="true">
+                                <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" fill="none">
+                                    <path d="M4 11.5l3.2 3L16 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                            </span>
+                            <span class="token-info-copy">100% open source, MIT licensed, and merchant-first.</span>
+                        </li>
+                        <li class="token-info">
+                            <span class="token-info-icon" aria-hidden="true">
+                                <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" fill="none">
+                                    <path d="M4 11.5l3.2 3L16 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                            </span>
+                            <span class="token-info-copy">Creator rewards cover hosting, watcher redundancy, and open RPC access.</span>
+                        </li>
+                        <li class="token-info">
+                            <span class="token-info-icon" aria-hidden="true">
+                                <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" fill="none">
+                                    <path d="M4 11.5l3.2 3L16 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                            </span>
+                            <span class="token-info-copy">No surprise premiums or gated managed features—ever.</span>
+                        </li>
+                        <li class="token-info">
+                            <span class="token-info-icon" aria-hidden="true">
+                                <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" fill="none">
+                                    <path d="M4 11.5l3.2 3L16 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                            </span>
+                            <span class="token-info-copy">Community votes decide which merchant features ship next.</span>
+                        </li>
+                    </ul>
+                </div>
+                <aside class="glow-card token-meta reveal reveal-right" aria-label="Token details">
+                    <div class="token-line">
+                        <span class="mono-label">Token address</span>
+                        <code>9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump</code>
+                    </div>
+                    <p class="token-note">Not financial advice. The token exists solely for infrastructure, RPC fees, and community rewards.</p>
+                </aside>
+            </div>
+        </section>
+
+        <section class="news">
+            <div class="container news-grid">
+                <div class="news-card reveal">
+                    <span class="card-tag">[ Update ]</span>
+                    <h3>Managed merchant beta is live</h3>
+                    <p>We’re onboarding the first ten teams to the hosted checkout service. Spots go fast—join the waitlist below.</p>
+                    <a class="inline-link" href="#waitlist">Reserve a spot →</a>
+                </div>
+                <div class="news-card reveal">
+                    <span class="card-tag">[ Utilities ]</span>
+                    <ul class="news-links">
+                        <li><a href="https://github.com/charliekarlsson/signless-solana" target="_blank" rel="noopener">Legacy builder repo</a></li>
+                        <li><a href="https://github.com/charliekarlsson/signless-solana/tree/main/examples" target="_blank" rel="noopener">Example checkouts</a></li>
+                        <li><a href="https://github.com/charliekarlsson/signless-solana#readme" target="_blank" rel="noopener">Docs &amp; quickstart</a></li>
+                        <li><a href="demo-game.html">Demo: Managed checkout preview</a></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="waitlist" class="token-cta">
+            <div class="container token-grid">
+                <div class="token-copy reveal">
+                    <span class="section-tag">[ Join the beta ]</span>
+                    <h2 class="headline-xl">Be one of the first ten managed merchants</h2>
+                    <p>We work hands-on with every beta team to configure wallets, success metrics, and alerting. Drop us a line and we’ll schedule a 20-minute onboarding call.</p>
+                    <div class="token-actions">
+                        <a class="btn-primary" href="mailto:hello@signless.net?subject=SignLess%20Managed%20Beta">Email the team</a>
+                        <a class="btn-secondary" href="https://github.com/charliekarlsson/signless-demo-frontend/blob/main/docs/MANAGED_MERCHANT_ARCH.md" target="_blank" rel="noopener">Read the architecture brief</a>
+                    </div>
+                </div>
+                <aside class="glow-card token-meta reveal" aria-label="Waitlist details">
+                    <div class="token-line">
+                        <span class="mono-label">What you get</span>
+                        <p>Hosted checkout, webhook delivery, analytics dashboard, and direct Slack support.</p>
+                    </div>
+                    <div class="token-line">
+                        <span class="mono-label">What we ask</span>
+                        <p>Weekly feedback, real transaction volume, and willingness to test multi-chain flows.</p>
+                    </div>
+                    <div class="token-line">
+                        <span class="mono-label">Timeline</span>
+                        <p>Beta slots open now · General access Q1 2026.</p>
+                    </div>
+                </aside>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container footer-grid">
+            <div class="footer-brand">
+                <img src="logos/logotext.png" alt="SignLess" class="footer-mark">
+                <p>SignLess runs your X402-native onchain checkouts so your team skips the ops overhead. MIT licensed, community funded.</p>
+            </div>
+            <div>
+                <h4>Navigation</h4>
+                <a href="#intro">Overview</a>
+                <a href="#platform">Platform</a>
+                <a href="#how-it-works">How it works</a>
+                <a href="#automation">Automation</a>
+                <a href="#usecases">Use cases</a>
+                <a href="#dashboard">Dashboard</a>
+                <a href="#waitlist">Waitlist</a>
+            </div>
+            <div>
+                <h4>Resources</h4>
+                <a href="https://github.com/charliekarlsson/signless-solana" target="_blank" rel="noopener">GitHub</a>
+                <a href="https://github.com/charliekarlsson/signless-solana#readme" target="_blank" rel="noopener">Documentation</a>
+                <a href="https://github.com/charliekarlsson/signless-solana/tree/main/examples" target="_blank" rel="noopener">Examples</a>
+            </div>
+            <div>
+                <h4>Contact</h4>
+                <a href="https://x.com/Signlessnet" target="_blank" rel="noopener">Follow on X</a>
+                <a href="mailto:hello@signless.net">hello@signless.net</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 SignLess. Crafted in Sweden by Charlie Karlsson.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        function copyWaitlistEmail() {
+            const contact = 'hello@signless.net';
+            navigator.clipboard.writeText(contact).then(() => {
+                const btn = event.target;
+                const prior = btn.textContent;
+                btn.textContent = 'Email copied!';
+                btn.classList.add('btn-success');
+                setTimeout(() => {
+                    btn.textContent = prior;
+                    btn.classList.remove('btn-success');
+                }, 1800);
+            }).catch(() => {
+                window.location.href = 'mailto:hello@signless.net?subject=SignLess%20Managed%20Beta';
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,183 +1,178 @@
 import express from 'express';
-import { isValidAddress, verifyTransaction, checkForIncomingTransaction } from '../services/solana.js';
-import { 
-  createAuthRequest, 
-  verifyAuthRequest, 
-  getAuthStatus,
-  invalidateSession 
-} from '../services/sessionManager.js';
+import bcrypt from 'bcryptjs';
+import { z } from 'zod';
+import prisma from '../lib/prisma.js';
+import createMerchantSlug from '../utils/generateMerchantSlug.js';
+import generateApiKey from '../utils/generateApiKey.js';
+import {
+  issueSession,
+  setSessionCookie,
+  clearSessionCookie,
+  requireAuth,
+} from '../middleware/auth.js';
 
 const router = express.Router();
 
-/**
- * POST /api/auth/initiate
- * Start authentication process - get transaction details
- */
-router.post('/initiate', async (req, res, next) => {
+const registrationSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8),
+  companyName: z.string().min(2).max(128),
+  supportEmail: z.string().email().optional(),
+});
+
+const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(1),
+});
+
+const serializeUser = (user) => ({
+  id: user.id,
+  email: user.email,
+  createdAt: user.createdAt,
+});
+
+const serializeMerchant = (merchant) => ({
+  id: merchant.id,
+  slug: merchant.slug,
+  displayName: merchant.displayName,
+  primaryEmail: merchant.primaryEmail,
+  branding: merchant.branding,
+  webhookUrl: merchant.webhookUrl,
+  createdAt: merchant.createdAt,
+  updatedAt: merchant.updatedAt,
+});
+
+router.post('/register', async (req, res, next) => {
   try {
-    const { walletAddress } = req.body;
-
-    if (!walletAddress) {
-      return res.status(400).json({ 
-        error: 'Wallet address is required' 
+    const parsed = registrationSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({
+        error: 'Invalid registration payload',
+        details: parsed.error.flatten(),
       });
     }
 
-    // Validate wallet address
-    if (!isValidAddress(walletAddress)) {
-      return res.status(400).json({ 
-        error: 'Invalid Solana wallet address' 
-      });
+    const data = parsed.data;
+    const email = data.email.toLowerCase();
+
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+    if (existingUser) {
+      return res.status(409).json({ error: 'Email already in use' });
     }
 
-    // Create auth request
-    const authRequest = createAuthRequest(walletAddress);
+    const passwordHash = await bcrypt.hash(data.password, 12);
+    const slug = await createMerchantSlug(data.companyName);
 
-    res.json({
-      success: true,
-      ...authRequest
+    const defaultBranding = {
+      colors: {
+        primary: '#4f7cff',
+        accent: '#22b8a9',
+      },
+      typography: {
+        heading: 'Manrope',
+        body: 'Manrope',
+      },
+    };
+
+    const user = await prisma.user.create({
+      data: {
+        email,
+        passwordHash,
+        merchant: {
+          create: {
+            displayName: data.companyName,
+            slug,
+            primaryEmail: data.supportEmail || email,
+            branding: defaultBranding,
+          },
+        },
+      },
+      include: {
+        merchant: true,
+      },
     });
 
+    const apiKeyValue = generateApiKey();
+    await prisma.apiKey.create({
+      data: {
+        merchantId: user.merchant.id,
+        key: apiKeyValue,
+      },
+    });
+
+    const token = issueSession(user.id);
+    setSessionCookie(res, token);
+
+    return res.status(201).json({
+      user: serializeUser(user),
+      merchant: serializeMerchant(user.merchant),
+      apiKey: apiKeyValue,
+    });
   } catch (error) {
     next(error);
   }
 });
 
-/**
- * POST /api/auth/verify
- * Submit transaction signature for verification (OPTIONAL - for manual signature submission)
- */
-router.post('/verify', async (req, res, next) => {
+router.post('/login', async (req, res, next) => {
   try {
-    const { sessionId, signature } = req.body;
-
-    if (!sessionId) {
-      return res.status(400).json({ 
-        error: 'Session ID is required' 
+    const parsed = loginSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({
+        error: 'Invalid login payload',
+        details: parsed.error.flatten(),
       });
     }
 
-    // Get auth request details
-    const authStatus = getAuthStatus(sessionId);
+    const data = parsed.data;
+    const email = data.email.toLowerCase();
 
-    if (authStatus.status === 'not_found') {
-      return res.status(404).json({ 
-        error: 'Session not found or expired' 
-      });
+    const user = await prisma.user.findUnique({
+      where: { email },
+      include: { merchant: true },
+    });
+
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    if (authStatus.status === 'expired') {
-      return res.status(400).json({ 
-        error: 'Session expired. Please start a new authentication request.' 
-      });
+    const passwordOk = await bcrypt.compare(data.password, user.passwordHash);
+    if (!passwordOk) {
+      return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    if (authStatus.status === 'verified') {
-      return res.json({
-        success: true,
-        message: 'Already verified',
-        ...authStatus
-      });
-    }
+    const token = issueSession(user.id);
+    setSessionCookie(res, token);
 
-    // If signature provided, verify it
-    if (signature) {
-      const verificationResult = await verifyTransaction(
-        signature,
-        authStatus.walletAddress,
-        authStatus.receiverAddress,
-        authStatus.expectedAmount
-      );
-
-      const result = verifyAuthRequest(sessionId, signature, verificationResult);
-
-      if (!result.success) {
-        return res.status(400).json(result);
-      }
-
-      return res.json(result);
-    }
-
-    // No signature provided - return current status
-    res.json({ success: false, ...authStatus });
-
+    return res.json({
+      user: serializeUser(user),
+      merchant: user.merchant ? serializeMerchant(user.merchant) : null,
+    });
   } catch (error) {
     next(error);
   }
 });
 
-/**
- * GET /api/auth/status/:sessionId
- * Check authentication status (for polling)
- * This endpoint checks blockchain for matching transactions automatically
- */
-router.get('/status/:sessionId', async (req, res, next) => {
-  try {
-    const { sessionId } = req.params;
-
-    if (!sessionId) {
-      return res.status(400).json({ 
-        error: 'Session ID is required' 
-      });
-    }
-
-    const status = getAuthStatus(sessionId);
-
-    // If already verified or expired, return as-is
-    if (status.status === 'verified' || status.status === 'expired' || status.status === 'not_found') {
-      return res.json(status);
-    }
-
-    // Session is pending - check blockchain for matching transaction
-    try {
-      const transactionResult = await checkForIncomingTransaction(
-        status.walletAddress,
-        status.receiverAddress,
-        status.expectedAmount
-      );
-
-      if (transactionResult.found) {
-        // Transaction found! Verify the session
-        const verificationResult = {
-          verified: true,
-          signature: transactionResult.signature,
-          amount: transactionResult.receivedAmount,
-          blockTime: transactionResult.blockTime
-        };
-
-        const result = verifyAuthRequest(sessionId, transactionResult.signature, verificationResult);
-        return res.json(result);
-      }
-    } catch (error) {
-      console.error('Error checking for transaction:', error);
-      // Don't fail the request, just return pending status
-    }
-
-    // No transaction found yet, return pending status
-    res.json(status);
-
-  } catch (error) {
-    next(error);
-  }
+router.post('/logout', (req, res) => {
+  clearSessionCookie(res);
+  res.json({ success: true });
 });
 
-/**
- * POST /api/auth/logout
- * Invalidate session
- */
-router.post('/logout', (req, res, next) => {
+router.get('/me', requireAuth, async (req, res, next) => {
   try {
-    const { sessionId } = req.body;
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+      include: { merchant: true },
+    });
 
-    if (!sessionId) {
-      return res.status(400).json({ 
-        error: 'Session ID is required' 
-      });
+    if (!user) {
+      clearSessionCookie(res);
+      return res.status(401).json({ error: 'Session expired' });
     }
 
-    const result = invalidateSession(sessionId);
-    res.json(result);
-
+    res.json({
+      user: serializeUser(user),
+      merchant: user.merchant ? serializeMerchant(user.merchant) : null,
+    });
   } catch (error) {
     next(error);
   }
