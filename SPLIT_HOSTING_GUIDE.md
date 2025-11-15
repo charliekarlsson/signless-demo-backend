@@ -96,7 +96,7 @@ NODE_ENV=production
 
 Railway will give you a URL like:
 ```
-https://signless-production-abc123.up.railway.app
+https://signless-demo-backend-production.up.railway.app
 ```
 
 Save this - you'll need it for the frontend!
@@ -135,7 +135,7 @@ const API_URL = 'http://localhost:3000';
 
 Change to:
 ```javascript
-const API_URL = 'https://signless-production-abc123.up.railway.app';
+const API_URL = 'https://signless-demo-backend-production.up.railway.app';
 ```
 
 **Important:** Use your actual Railway URL!
@@ -354,7 +354,7 @@ Your setup:
 ## 📚 Quick Reference
 
 **Frontend URL:** `https://signless-website.pages.dev`  
-**Backend URL:** `https://signless-production.up.railway.app`  
+**Backend URL:** `https://signless-demo-backend-production.up.railway.app`  
 **Demo URL:** `https://signless-website.pages.dev/demo-game.html`
 
 **Railway Dashboard:** https://railway.app/dashboard  

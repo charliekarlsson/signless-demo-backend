@@ -41,7 +41,7 @@ CORS_ORIGINS=https://yourfrontend.com
 
 1. Go to Settings > Networking
 2. Click "Generate Domain"
-3. Copy your Railway URL (e.g., https://signless-production.up.railway.app)
+3. Copy your Railway URL (e.g., https://signless-demo-backend-production.up.railway.app)
 
 ### Step 5: Update Frontend
 

@@ -5,7 +5,7 @@ import { URL } from 'node:url';
 const USAGE = `Usage: node scripts/check-railway.mjs <railway-base-url>
 
 Example:
-  node scripts/check-railway.mjs https://signless-production.up.railway.app
+  node scripts/check-railway.mjs https://signless-demo-backend-production.up.railway.app
 `;
 
 const baseUrl = argv[2];
