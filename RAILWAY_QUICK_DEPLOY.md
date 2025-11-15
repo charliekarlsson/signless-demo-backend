@@ -93,6 +93,14 @@ Expected response:
 }
 ```
 
+Or run the built-in diagnostic helper (Node 18+):
+
+```powershell
+npm run check:railway -- https://your-service.up.railway.app
+```
+
+If you see notes about "Railway fallback detected", the service isn't actually running—check the Start Command and redeploy.
+
 ### 6. Update your frontend(s)
 
 Point `VITE_API_URL` (for the builder) or any static demo scripts to the Railway URL:
