@@ -73,6 +73,8 @@ npx prisma migrate deploy && npm start
 
 This applies database migrations before the API starts accepting traffic. (Optional) set **Install Command** to `npm ci` for faster deterministic installs.
 
+> ℹ️ Tip: the repo now includes a `Procfile` with the same command so new Railway projects pick it up automatically. Updating an existing service still requires changing the Start Command in the dashboard once.
+
 ### 5. Deploy & verify
 
 Railway deploys automatically once the configuration saves. After the deploy turns green, test the health endpoint:
