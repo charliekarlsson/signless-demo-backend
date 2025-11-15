@@ -68,7 +68,7 @@ RPC_FALLBACK=https://rpc.ankr.com/base
 Under **Service → Settings → Start Command**, set:
 
 ```
-
+npx prisma migrate deploy && npm start
 ```
 
 This applies database migrations before the API starts accepting traffic. (Optional) set **Install Command** to `npm ci` for faster deterministic installs.

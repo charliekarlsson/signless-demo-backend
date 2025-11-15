@@ -4,7 +4,6 @@ export default {
   roots: ['<rootDir>/tests'],
   transform: {},
   modulePathIgnorePatterns: [
-    '<rootDir>/railway-backend',
     '<rootDir>/github-repo',
     '<rootDir>/cloudflare-frontend',
     '<rootDir>/frontend',

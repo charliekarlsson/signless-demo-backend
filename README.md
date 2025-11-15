@@ -59,7 +59,7 @@ signless/
 ### 2. Clone & install
 
 ```powershell
-git clone https://github.com/charliekarlsson/signless-demo-frontend.git signless
+git clone https://github.com/charliekarlsson/signless-demo-backend.git signless
 cd signless
 
 # Backend dependencies
