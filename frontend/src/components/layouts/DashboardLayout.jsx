@@ -1,9 +1,18 @@
-import React from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import React, { useCallback } from 'react';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.jsx';
 
 const DashboardLayout = () => {
-  const { merchant, logout } = useAuth();
+  const navigate = useNavigate();
+  const { merchant, logout, isOnboarded } = useAuth();
+
+  const handleGatedNav = useCallback((event, gated) => {
+    if (!gated || isOnboarded) {
+      return;
+    }
+    event.preventDefault();
+    navigate('/onboarding');
+  }, [isOnboarded, navigate]);
 
   return (
     <div className="dashboard-shell">
@@ -19,13 +28,43 @@ const DashboardLayout = () => {
           <NavLink to="/" end className={({ isActive }) => (isActive ? 'active' : undefined)}>
             Overview
           </NavLink>
-          <NavLink to="/checkouts" className={({ isActive }) => (isActive ? 'active' : undefined)}>
+          <NavLink
+            to="/checkouts"
+            className={({ isActive }) => {
+              const classes = [];
+              if (isActive) classes.push('active');
+              if (!isOnboarded) classes.push('disabled');
+              return classes.join(' ') || undefined;
+            }}
+            onClick={(event) => handleGatedNav(event, true)}
+            aria-disabled={!isOnboarded}
+          >
             Checkouts
           </NavLink>
-          <NavLink to="/builder" className={({ isActive }) => (isActive ? 'active' : undefined)}>
+          <NavLink
+            to="/builder"
+            className={({ isActive }) => {
+              const classes = [];
+              if (isActive) classes.push('active');
+              if (!isOnboarded) classes.push('disabled');
+              return classes.join(' ') || undefined;
+            }}
+            onClick={(event) => handleGatedNav(event, true)}
+            aria-disabled={!isOnboarded}
+          >
             Checkout Builder
           </NavLink>
-          <NavLink to="/api-keys" className={({ isActive }) => (isActive ? 'active' : undefined)}>
+          <NavLink
+            to="/api-keys"
+            className={({ isActive }) => {
+              const classes = [];
+              if (isActive) classes.push('active');
+              if (!isOnboarded) classes.push('disabled');
+              return classes.join(' ') || undefined;
+            }}
+            onClick={(event) => handleGatedNav(event, true)}
+            aria-disabled={!isOnboarded}
+          >
             API Keys
           </NavLink>
         </nav>

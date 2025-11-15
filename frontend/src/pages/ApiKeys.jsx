@@ -1,8 +1,17 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useMerchantProfile } from '../hooks/useMerchantProfile.js';
 import { api } from '../lib/api.js';
 import LoadingScreen from '../components/LoadingScreen.jsx';
+
+const STEP_LABELS = {
+  profile: 'Company profile',
+  branding: 'Branding preferences',
+  payout: 'Payout wallet',
+  compliance: 'Compliance details',
+  documents: 'Verification documents',
+};
 
 const ApiKeys = () => {
   const queryClient = useQueryClient();
@@ -76,6 +85,17 @@ const ApiKeys = () => {
   }
 
   const apiKeys = data?.apiKeys ?? [];
+  const merchant = data?.merchant;
+  const onboardingChecklist = merchant?.onboardingChecklist ?? {};
+
+  const missingSteps = useMemo(() => (
+    Object.entries(STEP_LABELS)
+      .filter(([key]) => onboardingChecklist[key] !== true)
+      .map(([, label]) => label)
+  ), [onboardingChecklist]);
+
+  const onboardingStatus = merchant?.onboardingStatus ?? 'NOT_STARTED';
+  const onboardingIncomplete = onboardingStatus !== 'APPROVED';
 
   return (
     <div className="panel">
@@ -88,11 +108,32 @@ const ApiKeys = () => {
           type="button"
           className="btn-secondary"
           onClick={handleCreateKey}
-          disabled={createKey.isPending}
+          disabled={createKey.isPending || onboardingIncomplete}
+          title={onboardingIncomplete ? 'Complete onboarding to unlock API keys' : undefined}
         >
-          {createKey.isPending ? 'Generating…' : 'Generate key'}
+          {createKey.isPending ? 'Generating…' : onboardingIncomplete ? 'Locked until onboarding' : 'Generate key'}
         </button>
       </header>
+
+      {onboardingIncomplete && (
+        <div className="panel-callout warning">
+          <div>
+            <h3>Finish onboarding to mint keys</h3>
+            <p>
+              Your workspace is currently <strong>{onboardingStatus}</strong>. Complete the remaining compliance tasks
+              before issuing production credentials.
+            </p>
+            {missingSteps.length > 0 && (
+              <ul>
+                {missingSteps.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <Link className="btn-primary" to="/onboarding">Continue onboarding</Link>
+        </div>
+      )}
 
       {status && <p className={`panel-status ${status.type}`}>{status.message}</p>}
 

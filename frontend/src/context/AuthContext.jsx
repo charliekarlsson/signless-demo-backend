@@ -86,6 +86,9 @@ function AuthProvider({ children }) {
       logout,
       refresh: syncSession,
       isAuthenticated: Boolean(user?.id),
+      onboardingStatus: merchant?.onboardingStatus ?? null,
+      onboardingChecklist: merchant?.onboardingChecklist ?? null,
+      isOnboarded: merchant?.onboardingStatus === 'APPROVED',
     }),
     [user, merchant, loading, initializing, error],
   );

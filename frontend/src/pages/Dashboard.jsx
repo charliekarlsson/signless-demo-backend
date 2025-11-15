@@ -1,17 +1,57 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useMerchantProfile } from '../hooks/useMerchantProfile.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { api } from '../lib/api.js';
 import LoadingScreen from '../components/LoadingScreen.jsx';
 
+const STEP_LABELS = {
+  profile: 'Company profile',
+  branding: 'Branding preferences',
+  payout: 'Payout wallet',
+  compliance: 'Compliance details',
+  documents: 'Verification documents',
+};
+
+const STATUS_COPY = {
+  NOT_STARTED: {
+    title: 'Finish onboarding to unlock checkouts and API keys',
+    description: 'Complete the onboarding workflow so we can enable settlements and production credentials for your workspace.',
+  },
+  COLLECT_PROFILE: {
+    title: 'Wrap up your company profile',
+    description: 'Provide business contact info and checkout branding so customers know who they are paying.',
+  },
+  COLLECT_PAYOUT: {
+    title: 'Add a payout wallet to settle funds',
+    description: 'Register an EVM wallet for USDC settlements. We support Base and Ethereum mainnet.',
+  },
+  COLLECT_COMPLIANCE: {
+    title: 'Regulatory review needs a few more details',
+    description: 'Submit compliance information and documents so our team can approve your workspace.',
+  },
+  REVIEW: {
+    title: 'Submission received—sit tight ✨',
+    description: 'Our compliance team will review your details shortly. We’ll email you the moment you’re approved.',
+  },
+  REJECTED: {
+    title: 'Action required before you can go live',
+    description: 'We weren’t able to approve your submission. Update the requested items and resubmit for review.',
+  },
+};
+
 const Dashboard = () => {
   const queryClient = useQueryClient();
   const { setMerchant } = useAuth();
   const { data, isLoading, isError, error, refetch } = useMerchantProfile();
+  const merchant = data?.merchant;
+  const onboardingStatus = merchant?.onboardingStatus ?? 'NOT_STARTED';
+  const onboardingChecklist = merchant?.onboardingChecklist ?? {};
   const [form, setForm] = useState({
     displayName: '',
     primaryEmail: '',
+    supportEmail: '',
     webhookUrl: '',
     primaryColor: '#4f7cff',
     accentColor: '#22b8a9',
@@ -19,18 +59,19 @@ const Dashboard = () => {
   const [statusMessage, setStatusMessage] = useState(null);
 
   useEffect(() => {
-    if (data?.merchant) {
-      const branding = data.merchant.branding ?? {};
+    if (merchant) {
+      const branding = merchant.branding ?? {};
       setForm({
-        displayName: data.merchant.displayName ?? '',
-        primaryEmail: data.merchant.primaryEmail ?? '',
-        webhookUrl: data.merchant.webhookUrl ?? '',
+        displayName: merchant.displayName ?? '',
+        primaryEmail: merchant.primaryEmail ?? '',
+        supportEmail: merchant.supportEmail ?? merchant.primaryEmail ?? '',
+        webhookUrl: merchant.webhookUrl ?? '',
         primaryColor: branding.colors?.primary ?? '#4f7cff',
         accentColor: branding.colors?.accent ?? '#22b8a9',
       });
-      setMerchant(data.merchant);
+      setMerchant(merchant);
     }
-  }, [data, setMerchant]);
+  }, [merchant, setMerchant]);
 
   const updateProfile = useMutation({
     mutationFn: (payload) => api.put('/api/merchant/profile', payload),
@@ -45,22 +86,34 @@ const Dashboard = () => {
   });
 
   const metrics = useMemo(() => {
-    if (!data?.merchant) return [];
+    if (!merchant) return [];
     return [
       {
         label: 'Merchant slug',
-        value: data.merchant.slug,
+        value: merchant.slug,
       },
       {
         label: 'Workspace created',
-        value: new Date(data.merchant.createdAt).toLocaleDateString(),
+        value: new Date(merchant.createdAt).toLocaleDateString(),
       },
       {
         label: 'Webhook status',
-        value: data.merchant.webhookUrl ? 'Configured' : 'Not set',
+        value: merchant.webhookUrl ? 'Configured' : 'Not set',
+      },
+      {
+        label: 'Onboarding status',
+        value: onboardingStatus,
       },
     ];
-  }, [data?.merchant]);
+  }, [merchant, onboardingStatus]);
+
+  const incompleteSteps = useMemo(() => (
+    Object.entries(STEP_LABELS)
+      .filter(([key]) => onboardingChecklist[key] !== true)
+      .map(([, label]) => label)
+  ), [onboardingChecklist]);
+
+  const statusCopy = STATUS_COPY[onboardingStatus] ?? STATUS_COPY.NOT_STARTED;
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -79,6 +132,7 @@ const Dashboard = () => {
     const payload = {
       displayName: form.displayName,
       primaryEmail: form.primaryEmail,
+      supportEmail: form.supportEmail,
       webhookUrl: form.webhookUrl || '',
       branding: {
         colors: {
@@ -107,6 +161,23 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-content">
+      {onboardingStatus !== 'APPROVED' && (
+        <div className="panel-callout warning">
+          <div>
+            <h3>{statusCopy.title}</h3>
+            <p>{statusCopy.description}</p>
+            {incompleteSteps.length > 0 && (
+              <ul>
+                {incompleteSteps.map((step) => (
+                  <li key={step}>{step}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <Link className="btn-primary" to="/onboarding">Continue onboarding</Link>
+        </div>
+      )}
+
       <section className="metrics-grid">
         {metrics.map((metric) => (
           <article key={metric.label} className="metric-tile">
@@ -145,6 +216,18 @@ const Dashboard = () => {
                 onChange={handleChange}
                 required
               />
+            </div>
+            <div className="form-field">
+              <label htmlFor="supportEmail">Support email</label>
+              <input
+                id="supportEmail"
+                name="supportEmail"
+                type="email"
+                value={form.supportEmail}
+                onChange={handleChange}
+                required
+              />
+              <p className="form-helper">Used for payout and compliance coordination.</p>
             </div>
             <div className="form-field">
               <label htmlFor="webhookUrl">Webhook URL</label>

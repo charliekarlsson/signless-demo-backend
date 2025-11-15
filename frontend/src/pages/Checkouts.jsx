@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useCheckouts, useCreateCheckout, useDeleteCheckout, useCheckoutRequirement } from '../hooks/useCheckouts.js';
 import LoadingScreen from '../components/LoadingScreen.jsx';
 
@@ -25,6 +26,14 @@ const CURRENCY_OPTIONS = [{ value: 'USDC', label: 'USDC' }];
 const SCHEME_OPTIONS = [{ value: 'exact', label: 'Exact amount' }];
 
 const getDefaultAsset = (network) => NETWORK_OPTIONS.find((item) => item.value === network)?.defaultAsset ?? '';
+
+const STEP_LABELS = {
+  profile: 'Company profile',
+  branding: 'Branding preferences',
+  payout: 'Payout wallet',
+  compliance: 'Compliance details',
+  documents: 'Verification documents',
+};
 
 const initialFormState = {
   name: '',
@@ -139,6 +148,35 @@ const Checkouts = () => {
 
   if (isLoading) {
     return <LoadingScreen message="Loading your checkouts…" />;
+  }
+
+  if (isError && error?.status === 409) {
+    return (
+      <div className="onboarding-gate">
+        <div className="onboarding-gate-content">
+          <h1>Complete onboarding to issue checkouts</h1>
+          <p>
+            We need a verified payout wallet and compliance package before hosted checkouts can collect payments.
+            Finish the remaining tasks and we&rsquo;ll unlock this workspace instantly once approved.
+          </p>
+
+          {error?.data?.missingSteps?.length > 0 && (
+            <div className="onboarding-gate-steps">
+              <h2>Outstanding items</h2>
+              <ul>
+                {error.data.missingSteps.map((step) => (
+                  <li key={step}>{STEP_LABELS[step] ?? step}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          <Link className="btn-primary" to="/onboarding">
+            Continue onboarding
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   if (isError) {

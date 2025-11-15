@@ -68,6 +68,8 @@ export const requireAuth = async (req, res, next) => {
         ? {
             id: user.merchant.id,
             slug: user.merchant.slug,
+            onboardingStatus: user.merchant.onboardingStatus,
+            onboardingChecklist: user.merchant.onboardingChecklist,
           }
         : null,
     };

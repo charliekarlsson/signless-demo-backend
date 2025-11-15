@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { API_BASE_URL } from '../lib/api';
 import './TransactionAuth.css';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_URL = API_BASE_URL || '';
+
+const withApiBase = (path) => (API_URL ? `${API_URL}${path}` : path);
 
 const TransactionAuth = () => {
   const [walletAddress, setWalletAddress] = useState('');
@@ -13,13 +16,19 @@ const TransactionAuth = () => {
   const [success, setSuccess] = useState(false);
   const [polling, setPolling] = useState(false);
 
+  useEffect(() => {
+    if (!API_URL && import.meta.env.PROD) {
+      console.error('[signless] No API base URL configured. Set VITE_API_URL or provide a runtime override via window.SIGNLESS_API_URL.');
+    }
+  }, []);
+
   // Poll for authentication status
   useEffect(() => {
     if (!polling || !sessionId) return;
 
     const pollInterval = setInterval(async () => {
       try {
-        const response = await axios.get(`${API_URL}/api/auth/status/${sessionId}`);
+        const response = await axios.get(withApiBase(`/api/auth/status/${sessionId}`));
         const data = response.data;
 
         if (data.status === 'verified') {
@@ -49,7 +58,7 @@ const TransactionAuth = () => {
 
     try {
       // Step 1: Initiate authentication with backend
-      const response = await axios.post(`${API_URL}/api/auth/initiate`, {
+      const response = await axios.post(withApiBase('/api/auth/initiate'), {
         walletAddress: walletAddress.trim()
       });
 

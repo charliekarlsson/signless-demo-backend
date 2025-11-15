@@ -92,6 +92,14 @@ npm run build
 # Upload the contents of the dist/ folder to your hosting provider
 ```
 
+### API configuration
+
+- **Local development** – create a `.env` (or `.env.local`) file with `VITE_API_URL=http://localhost:3000` so the builder proxies requests to your local backend.
+- **Production builds** – make sure `VITE_API_URL` is defined *before* running `npm run build`. When using direct uploads (e.g., `wrangler pages deploy dist`), supply a `.env.production` file or export the variable in your shell so the value is baked into the bundle.
+- **Runtime override** – if you need to swap the backend without rebuilding, inject `window.SIGNLESS_API_URL = 'https://your-backend.example.com'` (or `window.__SIGNLESS_CONFIG__ = { apiUrl: '...' }`) in a small script tag before `main.jsx` loads.
+
+If the app boots without an API URL in production it will fall back to same-origin requests and log a console error to highlight the missing configuration.
+
 ## Tips
 
 - Use the **preset selector** in the header to jump-start configurations for APIs or creator communities.

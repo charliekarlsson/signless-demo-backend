@@ -9,9 +9,58 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+const parseAllowedOrigins = () => {
+  const raw = process.env.CORS_ORIGINS;
+  if (!raw || raw.trim() === '') {
+    return '*';
+  }
+
+  if (raw.trim() === '*') {
+    return '*';
+  }
+
+  return raw
+    .split(',')
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+};
+
+const allowedOrigins = parseAllowedOrigins();
+
+const originMatcher = (origin) => {
+  if (!origin) {
+    return true;
+  }
+
+  if (allowedOrigins === '*') {
+    return true;
+  }
+
+  return allowedOrigins.some((allowed) => {
+    if (allowed === '*') {
+      return true;
+    }
+
+    if (allowed.startsWith('*.')) {
+      const withoutWildcard = allowed.slice(1);
+      return origin.endsWith(withoutWildcard);
+    }
+
+    return origin === allowed;
+  });
+};
+
 // Middleware
 app.use(cors({
-  origin: process.env.CORS_ORIGINS === '*' ? '*' : process.env.CORS_ORIGINS?.split(','),
+  origin(origin, callback) {
+    if (originMatcher(origin)) {
+      return callback(null, true);
+    }
+
+    const error = new Error(`Origin ${origin} not allowed by CORS`);
+    error.status = 403;
+    return callback(error);
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Session-Id']

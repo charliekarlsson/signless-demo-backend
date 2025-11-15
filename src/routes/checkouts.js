@@ -2,6 +2,7 @@ import express from 'express';
 import { z } from 'zod';
 import prisma from '../lib/prisma.js';
 import { requireAuth } from '../middleware/auth.js';
+import { requireOnboarded } from '../middleware/requireOnboarded.js';
 import slugify from '../utils/slugify.js';
 import { buildPaymentRequirement, buildPaymentRequiredResponse } from '../utils/paymentRequirements.js';
 
@@ -74,7 +75,7 @@ const serializeCheckout = (checkout) => {
 };
 
 
-router.get('/', requireAuth, async (req, res, next) => {
+router.get('/', requireAuth, requireOnboarded, async (req, res, next) => {
   try {
     const merchant = await prisma.merchant.findUnique({
       where: { userId: req.user.id },
@@ -95,7 +96,7 @@ router.get('/', requireAuth, async (req, res, next) => {
   }
 });
 
-router.post('/', requireAuth, async (req, res, next) => {
+router.post('/', requireAuth, requireOnboarded, async (req, res, next) => {
   try {
     const merchant = await prisma.merchant.findUnique({
       where: { userId: req.user.id },
@@ -152,7 +153,7 @@ router.post('/', requireAuth, async (req, res, next) => {
   }
 });
 
-router.get('/:checkoutId', requireAuth, async (req, res, next) => {
+router.get('/:checkoutId', requireAuth, requireOnboarded, async (req, res, next) => {
   try {
     const merchant = await prisma.merchant.findUnique({
       where: { userId: req.user.id },
@@ -176,7 +177,7 @@ router.get('/:checkoutId', requireAuth, async (req, res, next) => {
   }
 });
 
-router.patch('/:checkoutId', requireAuth, async (req, res, next) => {
+router.patch('/:checkoutId', requireAuth, requireOnboarded, async (req, res, next) => {
   try {
     const merchant = await prisma.merchant.findUnique({ where: { userId: req.user.id } });
     if (!merchant) {
@@ -247,7 +248,7 @@ router.patch('/:checkoutId', requireAuth, async (req, res, next) => {
   }
 });
 
-router.delete('/:checkoutId', requireAuth, async (req, res, next) => {
+router.delete('/:checkoutId', requireAuth, requireOnboarded, async (req, res, next) => {
   try {
     const merchant = await prisma.merchant.findUnique({ where: { userId: req.user.id } });
     if (!merchant) {
@@ -266,7 +267,7 @@ router.delete('/:checkoutId', requireAuth, async (req, res, next) => {
   }
 });
 
-router.get('/:checkoutId/payment-requirement', requireAuth, async (req, res, next) => {
+router.get('/:checkoutId/payment-requirement', requireAuth, requireOnboarded, async (req, res, next) => {
   try {
     const merchant = await prisma.merchant.findUnique({
       where: { userId: req.user.id },

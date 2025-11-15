@@ -23,12 +23,18 @@ model Merchant {
   displayName  String
   slug         String     @unique
   primaryEmail String
+  supportEmail String?
   branding     Json
   webhookUrl   String?
+  onboardingStatus   OnboardingStatus @default(NOT_STARTED)
+  onboardingChecklist Json?
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
   checkouts    Checkout[]
   apiKeys      ApiKey[]
+  payoutWallets     PayoutWallet[]
+  complianceProfile MerchantCompliance?
+  documents         MerchantDocument[]
 }
 
 model Checkout {
@@ -57,4 +63,58 @@ model ApiKey {
   key         String   @unique
   createdAt   DateTime @default(now())
   lastUsedAt  DateTime?
+}
+
+model PayoutWallet {
+  id           String   @id @default(cuid())
+  merchantId   String
+  merchant     Merchant @relation(fields: [merchantId], references: [id])
+  network      String
+  asset        String
+  address      String
+  label        String?
+  isPrimary    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([merchantId, isPrimary])
+}
+
+model MerchantCompliance {
+  id                 String   @id @default(cuid())
+  merchantId         String   @unique
+  merchant           Merchant @relation(fields: [merchantId], references: [id])
+  legalName          String
+  countryCode        String   @db.VarChar(2)
+  registrationNumber String?
+  contactName        String
+  contactPhone       String?
+  taxId              String?
+  kycStatus          String   @default("pending")
+  submittedAt        DateTime
+  reviewedAt         DateTime?
+  reviewerId         String?
+  notes              String?
+}
+
+model MerchantDocument {
+  id           String   @id @default(cuid())
+  merchantId   String
+  merchant     Merchant @relation(fields: [merchantId], references: [id])
+  type         String
+  storageKey   String
+  status       String   @default("pending")
+  uploadedAt   DateTime @default(now())
+  processedAt  DateTime?
+  checksum     String?
+}
+
+enum OnboardingStatus {
+  NOT_STARTED
+  COLLECT_PROFILE
+  COLLECT_PAYOUT
+  COLLECT_COMPLIANCE
+  REVIEW
+  APPROVED
+  REJECTED
 }

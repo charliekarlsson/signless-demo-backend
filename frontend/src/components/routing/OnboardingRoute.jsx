@@ -3,7 +3,7 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import LoadingScreen from '../LoadingScreen.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 
-const ProtectedRoute = ({ children, allowIncomplete = false }) => {
+const OnboardingRoute = ({ children }) => {
   const { isAuthenticated, initializing, isOnboarded } = useAuth();
   const location = useLocation();
 
@@ -15,11 +15,11 @@ const ProtectedRoute = ({ children, allowIncomplete = false }) => {
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
-  if (!allowIncomplete && !isOnboarded) {
-    return <Navigate to="/onboarding" replace state={{ from: location }} />;
+  if (isOnboarded) {
+    return <Navigate to="/" replace />;
   }
 
   return children ?? <Outlet />;
 };
 
-export default ProtectedRoute;
+export default OnboardingRoute;

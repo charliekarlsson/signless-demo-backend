@@ -4,14 +4,14 @@ import LoadingScreen from '../LoadingScreen.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 
 const PublicRoute = ({ children }) => {
-  const { isAuthenticated, initializing } = useAuth();
+  const { isAuthenticated, initializing, isOnboarded } = useAuth();
 
   if (initializing) {
     return <LoadingScreen />;
   }
 
   if (isAuthenticated) {
-    return <Navigate to="/" replace />;
+    return <Navigate to={isOnboarded ? '/' : '/onboarding'} replace />;
   }
 
   return children ?? <Outlet />;
