@@ -3,6 +3,71 @@ import prisma from '../lib/prisma.js';
 
 const TOKEN_COOKIE = 'x4zero_session';
 
+const parseBoolean = (value) => {
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+
+  const normalized = value.trim().toLowerCase();
+
+  if (['true', '1', 'yes', 'y'].includes(normalized)) {
+    return true;
+  }
+
+  if (['false', '0', 'no', 'n'].includes(normalized)) {
+    return false;
+  }
+
+  return undefined;
+};
+
+const resolveSameSite = (value) => {
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+
+  const normalized = value.trim().toLowerCase();
+  if (['lax', 'strict', 'none'].includes(normalized)) {
+    return normalized;
+  }
+
+  return undefined;
+};
+
+const inferProductionLike = () => {
+  const explicit = parseBoolean(process.env.SESSION_COOKIE_SECURE);
+  if (explicit !== undefined) {
+    return explicit;
+  }
+
+  const env = (process.env.NODE_ENV || '').toLowerCase();
+  if (env === 'production') {
+    return true;
+  }
+
+  const railwayEnv = (process.env.RAILWAY_ENVIRONMENT || '').toLowerCase();
+  if (railwayEnv === 'production') {
+    return true;
+  }
+
+  const railwayEnvName = (process.env.RAILWAY_ENVIRONMENT_NAME || '').toLowerCase();
+  if (railwayEnvName === 'production') {
+    return true;
+  }
+
+  return false;
+};
+
+const resolveCookieSettings = () => {
+  const productionLike = inferProductionLike();
+  const sameSiteOverride = resolveSameSite(process.env.SESSION_COOKIE_SAMESITE);
+
+  const sameSite = sameSiteOverride || (productionLike ? 'none' : 'lax');
+  const secure = sameSite === 'none' ? true : productionLike;
+
+  return { sameSite, secure };
+};
+
 const getTokenFromRequest = (req) => {
   const authHeader = req.headers.authorization;
   if (authHeader?.startsWith('Bearer ')) {
@@ -27,20 +92,21 @@ export const issueSession = (userId) => {
 };
 
 export const setSessionCookie = (res, token) => {
-  const isProduction = process.env.NODE_ENV === 'production';
+  const { sameSite, secure } = resolveCookieSettings();
   res.cookie(TOKEN_COOKIE, token, {
     httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? 'none' : 'lax',
+    secure,
+    sameSite,
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 };
 
 export const clearSessionCookie = (res) => {
+  const { sameSite, secure } = resolveCookieSettings();
   res.clearCookie(TOKEN_COOKIE, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    secure,
+    sameSite,
   });
 };
 

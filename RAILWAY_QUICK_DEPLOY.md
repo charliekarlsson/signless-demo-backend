@@ -59,6 +59,9 @@ CORS_ORIGINS=https://dashboard.yourdomain.com,https://pay.yourdomain.com
 RECEIVER_ADDRESS=0x0000000000000000000000000000000000000000
 RPC_PRIMARY=https://mainnet.base.org
 RPC_FALLBACK=https://rpc.ankr.com/base
+# Optional but recommended for cross-domain dashboards
+SESSION_COOKIE_SECURE=true
+SESSION_COOKIE_SAMESITE=none
 ```
 
 > Railway injects `DATABASE_URL` automatically from the linked PostgreSQL service. No need to add it manually.
