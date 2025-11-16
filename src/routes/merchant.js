@@ -9,8 +9,13 @@ import {
   deriveStatusFromChecklist,
   getIncompleteSteps,
 } from '../utils/onboardingChecklist.js';
+import { normalizeMerchantProgress } from '../utils/merchantProgress.js';
 
 const router = express.Router();
+
+const LOGO_DATA_URL_PATTERN = /^data:image\/(png|svg\+xml);base64,[A-Za-z0-9+/=]+$/;
+const MAX_LOGO_DATA_URL_LENGTH = 400_000; // ~300 KB base64 payload ceiling
+const MAX_LOGO_SIZE_BYTES = 200 * 1024; // 200 KB decoded asset size
 
 const brandingSchema = z.object({
   colors: z
@@ -24,6 +29,16 @@ const brandingSchema = z.object({
       heading: z.string().max(64),
       body: z.string().max(64),
     })
+    .optional(),
+  logo: z
+    .object({
+      dataUrl: z
+        .string()
+        .max(MAX_LOGO_DATA_URL_LENGTH)
+        .regex(LOGO_DATA_URL_PATTERN),
+      fileName: z.string().max(160),
+    })
+    .nullable()
     .optional(),
 });
 
@@ -73,38 +88,66 @@ const serializePayoutWallet = (wallet) => ({
 
 router.get('/profile', requireAuth, async (req, res, next) => {
   try {
+    const baseInclude = {
+      apiKeys: true,
+      payoutWallets: {
+        orderBy: [
+          { isPrimary: 'desc' },
+          { createdAt: 'desc' },
+        ],
+      },
+      complianceProfile: true,
+      documents: {
+        orderBy: { uploadedAt: 'desc' },
+      },
+    };
+
     const merchant = await prisma.merchant.findUnique({
       where: { userId: req.user.id },
-      include: {
-        apiKeys: true,
-        payoutWallets: {
-          orderBy: [
-            { isPrimary: 'desc' },
-            { createdAt: 'desc' },
-          ],
-        },
-        complianceProfile: true,
-        documents: {
-          orderBy: { uploadedAt: 'desc' },
-        },
-      },
+      include: baseInclude,
     });
 
     if (!merchant) {
       return res.status(404).json({ error: 'Merchant profile not found' });
     }
 
+    const normalizedMerchant = await normalizeMerchantProgress(merchant, { include: baseInclude });
+
     res.json({
-      merchant: serializeMerchant(merchant),
-      apiKeys: merchant.apiKeys.map(serializeApiKey),
-      payoutWallets: merchant.payoutWallets.map(serializePayoutWallet),
-      compliance: merchant.complianceProfile,
-      documents: merchant.documents,
+      merchant: serializeMerchant(normalizedMerchant),
+      apiKeys: normalizedMerchant.apiKeys.map(serializeApiKey),
+      payoutWallets: normalizedMerchant.payoutWallets.map(serializePayoutWallet),
+      compliance: normalizedMerchant.complianceProfile,
+      documents: normalizedMerchant.documents,
     });
   } catch (error) {
     next(error);
   }
 });
+
+const mergeBrandingPayload = (existing, incoming) => {
+  if (!incoming) return existing ?? null;
+
+  const base = { ...(existing ?? {}) };
+
+  if (incoming.colors) {
+    base.colors = { ...(existing?.colors ?? {}), ...incoming.colors };
+  }
+
+  if (incoming.typography) {
+    base.typography = { ...(existing?.typography ?? {}), ...incoming.typography };
+  }
+
+  if (Object.prototype.hasOwnProperty.call(incoming, 'logo')) {
+    if (incoming.logo === null) {
+      delete base.logo;
+    } else if (incoming.logo) {
+      base.logo = incoming.logo;
+    }
+  }
+
+  return Object.keys(base).length > 0 ? base : null;
+};
 
 router.put('/profile', requireAuth, async (req, res, next) => {
   try {
@@ -122,9 +165,19 @@ router.put('/profile', requireAuth, async (req, res, next) => {
     }
 
     const updates = parsed.data;
-    const mergedBranding = updates.branding
-      ? { ...(merchant.branding ?? {}), ...updates.branding }
-      : merchant.branding;
+    if (updates.branding?.logo && updates.branding.logo !== null) {
+      const [metadata, base64Payload] = updates.branding.logo.dataUrl.split(',');
+      if (!metadata || !base64Payload) {
+        return res.status(400).json({ error: 'Invalid logo payload' });
+      }
+
+      const decoded = Buffer.from(base64Payload, 'base64');
+      if (decoded.byteLength > MAX_LOGO_SIZE_BYTES) {
+        return res.status(400).json({ error: 'Logo must be 200KB or smaller' });
+      }
+    }
+
+    const mergedBranding = mergeBrandingPayload(merchant.branding, updates.branding);
 
     const checklist = ensureChecklist(merchant.onboardingChecklist);
     const updatedChecklist = markChecklistSteps(checklist, {

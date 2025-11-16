@@ -4,6 +4,7 @@ import { z } from 'zod';
 import prisma from '../lib/prisma.js';
 import createMerchantSlug from '../utils/generateMerchantSlug.js';
 import generateApiKey from '../utils/generateApiKey.js';
+import { normalizeMerchantProgress } from '../utils/merchantProgress.js';
 import {
   issueSession,
   setSessionCookie,
@@ -75,6 +76,7 @@ router.post('/register', async (req, res, next) => {
         heading: 'Manrope',
         body: 'Manrope',
       },
+      logo: null,
     };
 
     const user = await prisma.user.create({
@@ -93,8 +95,8 @@ router.post('/register', async (req, res, next) => {
               profile: false,
               branding: false,
               payout: false,
-              compliance: false,
-              documents: false,
+              compliance: true,
+              documents: true,
               submitted: false,
               approved: false,
             },
@@ -105,6 +107,8 @@ router.post('/register', async (req, res, next) => {
         merchant: true,
       },
     });
+
+    const normalizedMerchant = await normalizeMerchantProgress(user.merchant);
 
     const apiKeyValue = generateApiKey();
     await prisma.apiKey.create({
@@ -119,7 +123,7 @@ router.post('/register', async (req, res, next) => {
 
     return res.status(201).json({
       user: serializeUser(user),
-      merchant: serializeMerchant(user.merchant),
+      merchant: serializeMerchant(normalizedMerchant),
       apiKey: apiKeyValue,
     });
   } catch (error) {
@@ -154,12 +158,14 @@ router.post('/login', async (req, res, next) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
+    const normalizedMerchant = await normalizeMerchantProgress(user.merchant);
+
     const token = issueSession(user.id);
     setSessionCookie(res, token);
 
     return res.json({
       user: serializeUser(user),
-      merchant: user.merchant ? serializeMerchant(user.merchant) : null,
+      merchant: normalizedMerchant ? serializeMerchant(normalizedMerchant) : null,
     });
   } catch (error) {
     next(error);
@@ -183,9 +189,11 @@ router.get('/me', requireAuth, async (req, res, next) => {
       return res.status(401).json({ error: 'Session expired' });
     }
 
+    const normalizedMerchant = await normalizeMerchantProgress(user.merchant);
+
     res.json({
       user: serializeUser(user),
-      merchant: user.merchant ? serializeMerchant(user.merchant) : null,
+      merchant: normalizedMerchant ? serializeMerchant(normalizedMerchant) : null,
     });
   } catch (error) {
     next(error);

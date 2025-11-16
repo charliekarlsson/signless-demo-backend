@@ -2,8 +2,8 @@ export const DEFAULT_CHECKLIST = {
   profile: false,
   branding: false,
   payout: false,
-  compliance: false,
-  documents: false,
+  compliance: true,
+  documents: true,
   submitted: false,
   approved: false,
 };
@@ -18,12 +18,21 @@ export const ONBOARDING_STATUSES = {
   REJECTED: 'REJECTED',
 };
 
-export const REQUIRED_STEPS = ['profile', 'branding', 'payout', 'compliance', 'documents'];
+export const REQUIRED_STEPS = ['profile', 'branding', 'payout'];
 
-export const ensureChecklist = (value) => ({
-  ...DEFAULT_CHECKLIST,
-  ...(value && typeof value === 'object' ? value : {}),
-});
+export const ensureChecklist = (value) => {
+  const merged = {
+    ...DEFAULT_CHECKLIST,
+    ...(value && typeof value === 'object' ? value : {}),
+  };
+
+  // Compliance artifacts are no longer required—normalize to completed
+  merged.compliance = true;
+  merged.documents = true;
+  merged.submitted = false;
+
+  return merged;
+};
 
 export const getIncompleteSteps = (checklist) => REQUIRED_STEPS.filter((step) => !checklist[step]);
 
@@ -39,7 +48,7 @@ export const deriveStatusFromChecklist = (checklist, currentStatus = ONBOARDING_
   }
 
   if (checklist.submitted) {
-    return ONBOARDING_STATUSES.REVIEW;
+    return ONBOARDING_STATUSES.APPROVED;
   }
 
   if (isPristine(checklist)) {
@@ -54,25 +63,19 @@ export const deriveStatusFromChecklist = (checklist, currentStatus = ONBOARDING_
     return ONBOARDING_STATUSES.COLLECT_PAYOUT;
   }
 
-  if (!checklist.compliance || !checklist.documents) {
-    return ONBOARDING_STATUSES.COLLECT_COMPLIANCE;
-  }
-
-  return ONBOARDING_STATUSES.COLLECT_COMPLIANCE;
+  return ONBOARDING_STATUSES.APPROVED;
 };
 
-export const canSubmitForReview = (checklist) => (
-  checklist.profile
-  && checklist.branding
-  && checklist.payout
-  && checklist.compliance
-  && checklist.documents
-  && !checklist.submitted
-);
+export const canSubmitForReview = () => false;
 
 export const markChecklistSteps = (checklist, updates = {}) => {
   const merged = ensureChecklist(checklist);
+  const ignoredKeys = new Set(['compliance', 'documents', 'submitted']);
   Object.entries(updates).forEach(([key, value]) => {
+    if (ignoredKeys.has(key)) {
+      return;
+    }
+
     if (Object.prototype.hasOwnProperty.call(merged, key) && typeof value === 'boolean') {
       merged[key] = value;
     }

@@ -9,6 +9,10 @@ import {
   getIncompleteSteps,
   canSubmitForReview,
 } from '../utils/onboardingChecklist.js';
+import {
+  merchantRelations,
+  normalizeMerchantProgress,
+} from '../utils/merchantProgress.js';
 import { validatePayoutWallet } from '../utils/payoutValidation.js';
 
 const router = express.Router();
@@ -82,67 +86,13 @@ const requireOpsToken = (req, res, next) => {
   return next();
 };
 
-const merchantIncludes = {
-  payoutWallets: {
-    orderBy: [
-      { isPrimary: 'desc' },
-      { createdAt: 'desc' },
-    ],
-  },
-  complianceProfile: true,
-  documents: {
-    orderBy: { uploadedAt: 'desc' },
-  },
-};
-
-const checklistDiffers = (currentChecklist = {}, normalized = {}) => {
-  const keys = new Set([
-    ...Object.keys(currentChecklist || {}),
-    ...Object.keys(normalized || {}),
-  ]);
-
-  for (const key of keys) {
-    if (currentChecklist?.[key] !== normalized?.[key]) {
-      return true;
-    }
-  }
-
-  return false;
-};
-
 const loadMerchantForUser = async (userId) => {
   const merchant = await prisma.merchant.findUnique({
     where: { userId },
-    include: merchantIncludes,
+    include: merchantRelations,
   });
 
-  if (!merchant) {
-    return null;
-  }
-
-  const normalizedChecklist = ensureChecklist(merchant.onboardingChecklist);
-  const derivedStatus = deriveStatusFromChecklist(normalizedChecklist, merchant.onboardingStatus);
-
-  if (derivedStatus === 'APPROVED' && !normalizedChecklist.approved) {
-    normalizedChecklist.approved = true;
-    normalizedChecklist.submitted = false;
-  }
-
-  if (
-    merchant.onboardingStatus !== derivedStatus ||
-    checklistDiffers(merchant.onboardingChecklist, normalizedChecklist)
-  ) {
-    return prisma.merchant.update({
-      where: { id: merchant.id },
-      data: {
-        onboardingChecklist: normalizedChecklist,
-        onboardingStatus: derivedStatus,
-      },
-      include: merchantIncludes,
-    });
-  }
-
-  return merchant;
+  return normalizeMerchantProgress(merchant, { include: merchantRelations });
 };
 
 const persistChecklist = async (merchant, updates = {}) => {
