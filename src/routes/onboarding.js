@@ -82,27 +82,79 @@ const requireOpsToken = (req, res, next) => {
   return next();
 };
 
-const loadMerchantForUser = async (userId) => prisma.merchant.findUnique({
-  where: { userId },
-  include: {
-    payoutWallets: {
-      orderBy: [
-        { isPrimary: 'desc' },
-        { createdAt: 'desc' },
-      ],
-    },
-    complianceProfile: true,
-    documents: {
-      orderBy: { uploadedAt: 'desc' },
-    },
+const merchantIncludes = {
+  payoutWallets: {
+    orderBy: [
+      { isPrimary: 'desc' },
+      { createdAt: 'desc' },
+    ],
   },
-});
+  complianceProfile: true,
+  documents: {
+    orderBy: { uploadedAt: 'desc' },
+  },
+};
+
+const checklistDiffers = (currentChecklist = {}, normalized = {}) => {
+  const keys = new Set([
+    ...Object.keys(currentChecklist || {}),
+    ...Object.keys(normalized || {}),
+  ]);
+
+  for (const key of keys) {
+    if (currentChecklist?.[key] !== normalized?.[key]) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
+const loadMerchantForUser = async (userId) => {
+  const merchant = await prisma.merchant.findUnique({
+    where: { userId },
+    include: merchantIncludes,
+  });
+
+  if (!merchant) {
+    return null;
+  }
+
+  const normalizedChecklist = ensureChecklist(merchant.onboardingChecklist);
+  const derivedStatus = deriveStatusFromChecklist(normalizedChecklist, merchant.onboardingStatus);
+
+  if (derivedStatus === 'APPROVED' && !normalizedChecklist.approved) {
+    normalizedChecklist.approved = true;
+    normalizedChecklist.submitted = false;
+  }
+
+  if (
+    merchant.onboardingStatus !== derivedStatus ||
+    checklistDiffers(merchant.onboardingChecklist, normalizedChecklist)
+  ) {
+    return prisma.merchant.update({
+      where: { id: merchant.id },
+      data: {
+        onboardingChecklist: normalizedChecklist,
+        onboardingStatus: derivedStatus,
+      },
+      include: merchantIncludes,
+    });
+  }
+
+  return merchant;
+};
 
 const persistChecklist = async (merchant, updates = {}) => {
   const mergedChecklist = markChecklistSteps(ensureChecklist(merchant.onboardingChecklist), updates);
   const nextStatus = merchant.onboardingStatus === 'APPROVED'
     ? 'APPROVED'
     : deriveStatusFromChecklist(mergedChecklist, merchant.onboardingStatus);
+
+  if (nextStatus === 'APPROVED') {
+    mergedChecklist.approved = true;
+    mergedChecklist.submitted = false;
+  }
 
   return prisma.merchant.update({
     where: { id: merchant.id },
@@ -387,36 +439,20 @@ router.post('/submit', requireAuth, async (req, res, next) => {
     }
 
     const checklist = ensureChecklist(merchant.onboardingChecklist);
-    if (!canSubmitForReview(checklist)) {
+    const missingSteps = getIncompleteSteps(checklist);
+    if (missingSteps.length > 0) {
       return res.status(409).json({
-        error: 'Onboarding requirements missing',
-        missingSteps: getIncompleteSteps(checklist),
+        error: 'Complete required setup steps before going live.',
+        missingSteps,
       });
     }
 
-    const updatedMerchant = await prisma.merchant.update({
-      where: { id: merchant.id },
-      data: {
-        onboardingChecklist: {
-          ...checklist,
-          submitted: true,
-        },
-        onboardingStatus: 'REVIEW',
-      },
-    });
-
-    await prisma.merchantCompliance.updateMany({
-      where: { merchantId: merchant.id },
-      data: {
-        submittedAt: new Date(),
-        kycStatus: 'in_review',
-      },
-    });
+    const updatedMerchant = await persistChecklist(merchant, {});
 
     res.json({
       status: updatedMerchant.onboardingStatus,
       checklist: updatedMerchant.onboardingChecklist,
-      message: 'Onboarding submitted for review',
+      message: 'Manual review is no longer required. You are ready to accept payments.',
     });
   } catch (error) {
     next(error);
